@@ -1,19 +1,26 @@
 package Rides;
 
-import Graph.Segment;
+import Segments.Junction;
+import Segments.Segment;
+import Segments.Street;
 import de.hasenburg.geobroker.server.storage.Raster;
 
 import java.awt.geom.Path2D;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import static Config.Config.BBOX_LATS;
+import static Config.Config.BBOX_LONS;
+
 public class Ride {
 
-    List<RideBucket> rideBuckets = new ArrayList<>();
-    List<Incident> incidents = new ArrayList<>();
+    public List<RideBucket> rideBuckets = new ArrayList<>();
+    public List<Incident> unmatchedIncidents = new ArrayList<>();
+    public int numberOfMatchedIncidents = 0;
+    public List<RideBucket> unmatchedRideBuckets = new ArrayList<>();
     HashMap<String, Segment> segmentMap;
     Raster raster;
     List<Segment> visitedSegments = new ArrayList<>();
@@ -34,109 +41,117 @@ public class Ride {
             // System.out.println("header: " + line);
             boolean incidentPart = true;
             RideBucket lastRideBucket = null;
-            RideBucket thisRidebucket = null;
+            RideBucket thisRideBucket = null;
             double towardsSouthWest = 0.0;
             List<RideBucket> rideBucketsOfOneSegment = new ArrayList<>();
-            List<Incident> incidentsOfOneSegment = new ArrayList<>();
+            ArrayList<Incident> incidentsOfOneSegment = new ArrayList<>();
             while ((line = br.readLine()) != null) {
                 // change from incident part to ride part
-                if (line.startsWith("====")) {
+                if (line.startsWith("====")  || line.startsWith("lat") ) {
                     incidentPart = false;
                     continue;
                 }
-                if (incidentPart && !line.endsWith(",,,,,") && line.length()>5) {
+                // add incident
+                if (incidentPart) {
                     // System.out.println("incident line: " + line);
                     String[] lineArray = line.split(",", -1);
+                    // skip incident if it is "nothing" or corrupted
+                    if (line.endsWith(",,,,,") || line.length()<6 || lineArray[8].equals("0")||lineArray[8].equals("")) {
+                        continue;
+                    }
                     try {
-                        incidents.add(new Incident(Double.valueOf(lineArray[1]), Double.valueOf(lineArray[2]), Long.valueOf(lineArray[3]), Integer.valueOf(lineArray[4]), lineArray[5].equals("1"), lineArray[6].equals("1"), Integer.valueOf(lineArray[7]), Integer.valueOf(lineArray[8]), lineArray[9].equals("1"), lineArray[10].equals("1"), lineArray[11].equals("1"), lineArray[12].equals("1"), lineArray[13].equals("1"), lineArray[14].equals("1"), lineArray[15].equals("1"), lineArray[16].equals("1"), lineArray[17].equals("1"), lineArray[18].equals("1"), lineArray[19], lineArray[20].equals("1")));
+                        unmatchedIncidents.add(new Incident(Double.valueOf(lineArray[1]), Double.valueOf(lineArray[2]), Long.valueOf(lineArray[3]), Integer.valueOf(lineArray[4]), lineArray[5].equals("1"), lineArray[6].equals("1"), Integer.valueOf(lineArray[7]), Integer.valueOf(lineArray[8]), lineArray[9].equals("1"), lineArray[10].equals("1"), lineArray[11].equals("1"), lineArray[12].equals("1"), lineArray[13].equals("1"), lineArray[14].equals("1"), lineArray[15].equals("1"), lineArray[16].equals("1"), lineArray[17].equals("1"), lineArray[18].equals("1"), lineArray[19], lineArray[20].equals("1"), pathToRide.split("\\\\")[5]));
                     } catch (ArrayIndexOutOfBoundsException e) {
-                        /*
-                        System.err.println("i10 missing in incident of ride " + pathToRide);
-                        System.err.println("problematic line: " + line);
-                        System.err.println("setting i10 as false");
-                        */
-                        incidents.add(new Incident(Double.valueOf(lineArray[1]), Double.valueOf(lineArray[2]), Long.valueOf(lineArray[3]), Integer.valueOf(lineArray[4]), lineArray[5].equals("1"), lineArray[6].equals("1"), Integer.valueOf(lineArray[7]), Integer.valueOf(lineArray[8]), lineArray[9].equals("1"), lineArray[10].equals("1"), lineArray[11].equals("1"), lineArray[12].equals("1"), lineArray[13].equals("1"), lineArray[14].equals("1"), lineArray[15].equals("1"), lineArray[16].equals("1"), lineArray[17].equals("1"), lineArray[18].equals("1"), lineArray[19], false));
+                        unmatchedIncidents.add(new Incident(Double.valueOf(lineArray[1]), Double.valueOf(lineArray[2]), Long.valueOf(lineArray[3]), Integer.valueOf(lineArray[4]), lineArray[5].equals("1"), lineArray[6].equals("1"), Integer.valueOf(lineArray[7]), Integer.valueOf(lineArray[8]), lineArray[9].equals("1"), lineArray[10].equals("1"), lineArray[11].equals("1"), lineArray[12].equals("1"), lineArray[13].equals("1"), lineArray[14].equals("1"), lineArray[15].equals("1"), lineArray[16].equals("1"), lineArray[17].equals("1"), lineArray[18].equals("1"), lineArray[19], false, pathToRide.split("\\\\")[5]));
                     }
-                    /*if (line.startsWith("====")) {
-                        break;
-                    } else if (line.length() > 1 && !line.endsWith(",,,,,,,,,,,,") && !line.contains("#") && ) {
-                        String[] lineArray = line.split(",",-1);
-                        try {
-                            incidents.add(new Incident(Double.valueOf(lineArray[1]), Double.valueOf(lineArray[2]), Long.valueOf(lineArray[3]), Integer.valueOf(lineArray[4]), lineArray[5].equals("1"), lineArray[6].equals("1"), Integer.valueOf(lineArray[7]), Integer.valueOf(lineArray[8]), lineArray[9].equals("1"), lineArray[10].equals("1"), lineArray[11].equals("1"), lineArray[12].equals("1"), lineArray[13].equals("1"), lineArray[14].equals("1"), lineArray[15].equals("1"), lineArray[16].equals("1"), lineArray[17].equals("1"), lineArray[18].equals("1"), lineArray[19], lineArray[20].equals("1")));
-                        } catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
-                            System.err.println("i10 missing in incident of ride " + pathToRide);
-                            System.err.println("problematic line: " + line);
-                            System.err.println("setting i10 as false");
-                            incidents.add(new Incident(Double.valueOf(lineArray[1]), Double.valueOf(lineArray[2]), Long.valueOf(lineArray[3]), Integer.valueOf(lineArray[4]), lineArray[5].equals("1"), lineArray[6].equals("1"), Integer.valueOf(lineArray[7]), Integer.valueOf(lineArray[8]), lineArray[9].equals("1"), lineArray[10].equals("1"), lineArray[11].equals("1"), lineArray[12].equals("1"), lineArray[13].equals("1"), lineArray[14].equals("1"), lineArray[15].equals("1"), lineArray[16].equals("1"), lineArray[17].equals("1"), lineArray[18].equals("1"), lineArray[19], false));
-                        }
-                    }
-                    */
-                } else if (!incidentPart && !line.contains("#") && !line.startsWith("lat")) {
-                    if (!line.startsWith(",,")) {
+                    // add rideBucket
+                } else if (!incidentPart) {
+                    // skip line if it does not have GPS, or is a header
+                    if (!line.startsWith(",,") && !line.contains("#")  && !line.startsWith("lat")) {
                         //System.out.println("ride line: " + line);
                         String[] lineArray = line.split(",",-1);
-                        thisRidebucket = new RideBucket(Double.valueOf(lineArray[0]),Double.valueOf(lineArray[1]),Long.valueOf(lineArray[5]),segmentMap,raster, (ArrayList<Segment>)visitedSegments);
-                        /*
-                        if(isInBoundingBox(thisRidebucket.lat, thisRidebucket.lon,new double[]{52.51684217893412,52.51590351270207,52.51584950757138,52.51696424869295,52.517021411905226},new double[]{13.324215996350954,13.32341130266033,13.32358110930224,13.324547987630663,13.324380979980297})) {
-                            System.out.println(thisRidebucket.lon + "," + thisRidebucket.lat);
-                            System.out.println("13.324215996350954, 52.51684217893412\n" +
-                                    "13.32341130266033, 52.51590351270207\n" +
-                                    "13.32358110930224, 52.51584950757138\n" +
-                                    "13.324547987630663, 52.51696424869295\n" +
-                                    "13.324380979980297, 52.517021411905226\n" +
-                                    "13.324215996350954, 52.51684217893412");
-                            System.out.println(thisRidebucket.segment == null);
-                            System.exit(0);
+                        thisRideBucket = new RideBucket(Double.valueOf(lineArray[0]),Double.valueOf(lineArray[1]),Long.valueOf(lineArray[5]),segmentMap,raster, (ArrayList<Segment>)visitedSegments, pathToRide);
+                        if (!thisRideBucket.matchedToSegment && isInBoundingBox(thisRideBucket.lat,thisRideBucket.lon,BBOX_LATS,BBOX_LONS)) {
+                            unmatchedRideBuckets.add(thisRideBucket);
                         }
-                        */
-
-                        rideBuckets.add(thisRidebucket);
-                        if (thisRidebucket.segment == null) {
-                            //System.out.println("lat,lon: " + thisRidebucket.lat + "," + thisRidebucket.lon);
+                        rideBuckets.add(thisRideBucket);
+                        // skip this RideBucket, if it wasn't matched to a segment
+                        if (thisRideBucket.segment == null) {
+                            //System.out.println("lat,lon: " + thisRideBucket.lat + "," + thisRideBucket.lon);
                             continue;
                         }
-                        // System.out.println("id: " + thisRidebucket.segment.id + " isJunction: " + thisRidebucket.segment.isJunction);
-                        // if we are still in the same segment
-                        if (lastRideBucket == null || lastRideBucket.segment == thisRidebucket.segment) {
-                            rideBucketsOfOneSegment.add(thisRidebucket);
-                            // loop through each Incident of the ride and look, whether it happened in this RideBucket.
-                            for (int i = 0; i < incidents.size(); i++) {
-                                Incident thisIncident = incidents.get(i);
-                                if (thisIncident.lat == thisRidebucket.lat && thisIncident.lon == thisRidebucket.lon) {
-                                    incidentsOfOneSegment.add(thisIncident);
-                                }
-                            }
+                        // System.out.println("id: " + thisRideBucket.segment.id + " isJunction: " + thisRideBucket.segment.isJunction);
+                        // if we are still in the first segment or same segment as before...
+                        if (lastRideBucket == null || lastRideBucket.segment == thisRideBucket.segment) {
+                            rideBucketsOfOneSegment.add(thisRideBucket);
+                            // ...loop through each Incident of the ride and look, whether it happened in this RideBucket.
+                            matchIncidentToRideBucket(thisRideBucket, incidentsOfOneSegment);
                             if (lastRideBucket != null) {
-                                towardsSouthWest += calculateDirectionToLastRideBucket(lastRideBucket, thisRidebucket);
+                                towardsSouthWest += calculateDirectionToLastRideBucket(lastRideBucket, thisRideBucket);
                             }
 
                         } else { // entered new Segment!
                             // last segment was a junction, increase number of rides by one and number of incidents
-                            if (lastRideBucket.segment.isJunction) {
-                                lastRideBucket.segment.numberOfRides++;
-                                lastRideBucket.segment.numberOfIncidents += incidentsOfOneSegment.size();
-                            } else {
+                            if (lastRideBucket.segment instanceof Junction) {
+                                ((Junction)lastRideBucket.segment).numberOfRides++;
+                                ((Junction)lastRideBucket.segment).numberOfIncidents += incidentsOfOneSegment.size();
+                                for (int i = 0; i < incidentsOfOneSegment.size(); i++) {
+                                    Incident thisIncident = incidentsOfOneSegment.get(i);
+                                    if (thisIncident.scary) {
+                                        ((Junction)lastRideBucket.segment).scaryIncidentTypes[thisIncident.incident]++;
+                                        ((Junction)lastRideBucket.segment).numberOfScaryIncidents++;
+                                    } else {
+                                        ((Junction)lastRideBucket.segment).nonScaryIncidentTypes[thisIncident.incident]++;
+                                        ((Junction)lastRideBucket.segment).numberOfNonScaryIncidents++;
+                                    }
+                                }
+                            } else {// last segment was a street, increase number of rides by one and number of incidents
                                 // System.out.println(Arrays.toString(rideBucketsOfOneSegment.toArray(new Segment[0])));
                                 if (!rideBucketsOfOneSegment.isEmpty()) {
                                     if (towardsSouthWest > 0) {
-                                        lastRideBucket.segment.numberOfRidesSouthWest++;
-                                        lastRideBucket.segment.numberOfIncidentsSouthWest += incidentsOfOneSegment.size();
+                                        ((Street)lastRideBucket.segment).numberOfRidesSouthWest++;
+                                        ((Street)lastRideBucket.segment).numberOfIncidentsSouthWest += incidentsOfOneSegment.size();
+                                        for (int i = 0; i < incidentsOfOneSegment.size(); i++) {
+                                            Incident thisIncident = incidentsOfOneSegment.get(i);
+                                            if (thisIncident.scary) {
+                                                ((Street)lastRideBucket.segment).scaryIncidentTypesSouthWest[thisIncident.incident]++;
+                                                ((Street)lastRideBucket.segment).numberOfScaryIncidentsSouthWest++;
+                                            } else {
+                                                ((Street)lastRideBucket.segment).nonScaryIncidentTypesSouthWest[thisIncident.incident]++;
+                                                ((Street)lastRideBucket.segment).numberOfNonScaryIncidentsSouthWest++;
+                                            }
+                                        }
                                     } else if (towardsSouthWest < 0) {
+                                        ((Street)lastRideBucket.segment).numberOfRidesNorthEast++;
+                                        ((Street)lastRideBucket.segment).numberOfIncidentsNorthEast += incidentsOfOneSegment.size();
+                                        for (int i = 0; i < incidentsOfOneSegment.size(); i++) {
+                                            Incident thisIncident = incidentsOfOneSegment.get(i);
+                                            if (thisIncident.scary) {
+                                                ((Street)lastRideBucket.segment).scaryIncidentTypesNorthEast[thisIncident.incident]++;
+                                                ((Street)lastRideBucket.segment).numberOfScaryIncidentsNorthEast++;
 
-                                        lastRideBucket.segment.numberOfRidesNorthEast++;
-                                        lastRideBucket.segment.numberOfIncidentsNortheast += incidentsOfOneSegment.size();
+                                            } else {
+                                                ((Street)lastRideBucket.segment).nonScaryIncidentTypesNorthEast[thisIncident.incident]++;
+                                                ((Street)lastRideBucket.segment).numberOfNonScaryIncidentsNorthEast++;
+                                            }
+                                        }
                                     }
                                     // reset incidentsOfOneSegment and towardsSouthWest
                                     incidentsOfOneSegment = new ArrayList<>();
                                     towardsSouthWest = 0.0;
                                 }
-                            }
 
+                            }
+                            // and now look, whether an incident happened in this RideBucket
+                            matchIncidentToRideBucket(thisRideBucket, incidentsOfOneSegment);
                         }
-                        lastRideBucket = thisRidebucket;
+                        lastRideBucket = thisRideBucket;
                     }
 
                 }
+            }
+            if (rideBuckets.size()==0) {
+                System.out.println("rideBuckets.size()==0: " + pathToRide);
             }
 
         } catch (IOException e) {
@@ -164,7 +179,7 @@ public class Ride {
         return direction;
     }
 
-    private static boolean isInBoundingBox(double lat, double lon, double[] polygonLats, double[] polygonLons) {
+    public static boolean isInBoundingBox(double lat, double lon, double[] polygonLats, double[] polygonLons) {
 
         Path2D path = new Path2D.Double();
 
@@ -176,5 +191,26 @@ public class Ride {
         //path.closePath();
         return /*true;//*/path.contains(lat,lon);
 
+    }
+
+    public ArrayList<RideBucket> getUnmatchedRideBuckets() {
+        return (ArrayList<RideBucket>) unmatchedRideBuckets;
+    }
+
+    public void matchIncidentToRideBucket(RideBucket thisRideBucket, ArrayList<Incident> incidentsOfOneSegment) {
+        for (int i = 0; i < unmatchedIncidents.size(); i++) {
+            Incident thisIncident = unmatchedIncidents.get(i);
+            if (thisIncident.rideName.contains("VM2_94904613") && thisIncident.timestamp == 1337) {
+                System.out.println("thisIncident: " + thisIncident.lat + "," + thisIncident.lon);
+                System.out.println("thisRideBucket: " + thisRideBucket.lat + "," + thisRideBucket.lon);
+                System.out.println("");
+            }
+            // if an incident happened here, add it to incidentsOfOneSegment and remove it from the available incidents
+            if (thisIncident.lat == thisRideBucket.lat && thisIncident.lon == thisRideBucket.lon) {
+                incidentsOfOneSegment.add(thisIncident);
+                numberOfMatchedIncidents++;
+                unmatchedIncidents.remove(i);
+            }
+        }
     }
 }

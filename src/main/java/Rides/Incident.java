@@ -1,13 +1,13 @@
 package Rides;
 
 public class Incident {
-    double lat, lon;
-    long timestamp;
+    public double lat, lon;
+    public long timestamp;
     boolean child, trailer, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, scary;
     int pLoc, incident, bike;
-    String description;
+    public String description, rideName;
 
-    public Incident( double lat, double lon, long timestamp, int bike, boolean child, boolean trailer, int pLoc, int incident, boolean i1, boolean i2, boolean i3, boolean i4, boolean i5, boolean i6, boolean i7, boolean i8, boolean i9, boolean scary, String description, boolean i10) {
+    public Incident( double lat, double lon, long timestamp, int bike, boolean child, boolean trailer, int pLoc, int incident, boolean i1, boolean i2, boolean i3, boolean i4, boolean i5, boolean i6, boolean i7, boolean i8, boolean i9, boolean scary, String description, boolean i10, String rideName) {
         this.lat = lat;
         this.lon = lon;
         this.timestamp = timestamp;
@@ -28,6 +28,7 @@ public class Incident {
         this.scary = scary;
         this.description = description;
         this.i10 = i10;
+        this.rideName = rideName;
     }
 
 }
