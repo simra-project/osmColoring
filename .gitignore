@@ -1,2 +1,9 @@
+# Intellij
+.idea/
+out/
+*.iml
+*.iws
 
-.idea/workspace.xml
+# Maven
+log/
+target/
