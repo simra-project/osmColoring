@@ -68,6 +68,40 @@ public class Street extends Segment implements Comparable<Street> {
         return this.getScore().compareTo(o.getScore());
     }
 
+    public String toGeoJson() {
+        StringBuilder result = new StringBuilder();
+        result.append("{\"type\":\"Feature\",\"id\":\"").append(id)
+                .append("\",\"properties\":{\"type\":\"Street\",")
+                .append("\n\"score\":").append(getScore())
+                .append(",\n\"incidents\":").append((numberOfNonScaryIncidentsNorthEast + numberOfNonScaryIncidentsSouthWest + numberOfScaryIncidentsNorthEast + numberOfScaryIncidentsSouthWest))
+                .append(",\n\"rides\":").append((numberOfRidesSouthWest + numberOfRidesNorthEast))
+                .append(",\n\"length\":").append(seg_length)
+                .append(",\n\"rides south west\":").append(numberOfRidesSouthWest)
+                .append(",\n\"incidents south west\":").append((numberOfNonScaryIncidentsSouthWest + numberOfScaryIncidentsSouthWest))
+                .append(",\n\"score south west\":").append(scoreSouthWest)
+                .append(",\n\"rides north east\":").append(numberOfRidesNorthEast)
+                .append(",\n\"incidents north east\":").append((numberOfNonScaryIncidentsNorthEast + numberOfScaryIncidentsNorthEast))
+                .append(",\n\"score north east\":").append(scoreNorthEast)
+                .append(",\n\"clopa\":").append((scaryIncidentTypesSouthWest[1] + nonScaryIncidentTypesSouthWest[1] + scaryIncidentTypesNorthEast[1] + nonScaryIncidentTypesNorthEast[1]))
+                .append(",\n\"spiot\":").append((scaryIncidentTypesSouthWest[2] + nonScaryIncidentTypesSouthWest[2] + scaryIncidentTypesNorthEast[2] + nonScaryIncidentTypesNorthEast[2]))
+                .append(",\n\"nlorh\":").append((scaryIncidentTypesSouthWest[3] + nonScaryIncidentTypesSouthWest[3] + scaryIncidentTypesNorthEast[3] + nonScaryIncidentTypesNorthEast[3]))
+                .append(",\n\"saho\":").append((scaryIncidentTypesSouthWest[4] + nonScaryIncidentTypesSouthWest[4] + scaryIncidentTypesNorthEast[4] + nonScaryIncidentTypesNorthEast[4]))
+                .append(",\n\"tailgating\":").append((scaryIncidentTypesSouthWest[5] + nonScaryIncidentTypesSouthWest[5] + scaryIncidentTypesNorthEast[5] + nonScaryIncidentTypesNorthEast[5]))
+                .append(",\n\"nd\":").append((scaryIncidentTypesSouthWest[6] + nonScaryIncidentTypesSouthWest[6] + scaryIncidentTypesNorthEast[6] + nonScaryIncidentTypesNorthEast[6]))
+                .append(",\n\"dao\":").append((scaryIncidentTypesSouthWest[7] + nonScaryIncidentTypesSouthWest[7] + scaryIncidentTypesNorthEast[7] + nonScaryIncidentTypesNorthEast[7]))
+                .append(",\n\"other\":").append((scaryIncidentTypesSouthWest[8] + nonScaryIncidentTypesSouthWest[8] + scaryIncidentTypesNorthEast[8] + nonScaryIncidentTypesNorthEast[8]))
+                .append("},\n\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[");
+
+        for (int i = 0; i < poly_vertices_latsArray.length-1; i++) {
+            result.append("[").append(poly_vertices_lonsArray[i]).append(",").append(poly_vertices_latsArray[i]).append("],");
+        }
+        result.append("[").append(poly_vertices_lonsArray[poly_vertices_lonsArray.length-1]).append(",").append(poly_vertices_latsArray[poly_vertices_latsArray.length-1]).append("]]]}},");
+
+
+
+        return result.toString();
+    }
+
     public String toLeaflet(boolean debugOnMap) {
         StringBuilder result = new StringBuilder();
         result.append("\t\tL.polygon([\n");
@@ -114,23 +148,7 @@ public class Street extends Segment implements Comparable<Street> {
     }
 
     private String determineColor() {
-        String color = "#1a9641";
-        double opacity = 0.1;
-        int weight = 1;
-        if (score >= 0.5) {
-            color = "#d7191c";
-            opacity = 0.7;
-            weight = 5;
-        } else if (score >= 0.25) {
-            color = "#ff6600";
-            opacity = 0.7;
-            weight = 5;
-        } else if (score > 0.05) {
-            color = "#ffff00";
-            opacity = 0.7;
-            weight = 5;
-        }
-        return color+","+opacity + "," + weight;
+        return super.determineColor(score);
     }
 
 }

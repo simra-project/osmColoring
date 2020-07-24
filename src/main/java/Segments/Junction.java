@@ -74,6 +74,34 @@ public class Junction extends Segment implements Comparable<Junction> {
         return this.getScore().compareTo(o.getScore());
     }
 
+    public String toGeoJson() {
+        StringBuilder result = new StringBuilder();
+        result.append("{\"type\":\"Feature\",\"id\":\"").append(id)
+                .append("\",\"properties\":{\"type\":\"Street\",")
+                .append("\n\"score\":").append(getScore())
+                .append(",\n\"incidents\":").append((numberOfNonScaryIncidents + numberOfScaryIncidents))
+                .append(",\n\"rides\":").append(numberOfRides)
+                .append(",\n\"clopa\":").append((nonScaryIncidentTypes[1] + scaryIncidentTypes[1]))
+                .append(",\n\"spiot\":").append((nonScaryIncidentTypes[2] + scaryIncidentTypes[2]))
+                .append(",\n\"nlorh\":").append((nonScaryIncidentTypes[3] + scaryIncidentTypes[3]))
+                .append(",\n\"ssho\":").append((nonScaryIncidentTypes[4] + scaryIncidentTypes[4]))
+                .append(",\n\"tailgating\":").append((nonScaryIncidentTypes[5] + scaryIncidentTypes[5]))
+                .append(",\n\"near-dooring\":").append((nonScaryIncidentTypes[6] + scaryIncidentTypes[6]))
+                .append(",\n\"dodging an obstacle\":").append((nonScaryIncidentTypes[7] + scaryIncidentTypes[7]))
+                .append(",\n\"other\":").append((nonScaryIncidentTypes[8] + scaryIncidentTypes[8]))
+                .append("},\n\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[");
+
+        for (int i = 0; i < poly_vertices_latsArray.length-1; i++) {
+            result.append("[").append(poly_vertices_lonsArray[i]).append(",").append(poly_vertices_latsArray[i]).append("],");
+        }
+        result.append("[").append(poly_vertices_lonsArray[poly_vertices_lonsArray.length-1]).append(",").append(poly_vertices_latsArray[poly_vertices_latsArray.length-1]).append("]\n]]}},");
+
+
+
+        return result.toString();
+    }
+
+
     public String toLeaflet() {
         StringBuilder result = new StringBuilder();
         result.append("\n\t\tL.polygon([\n");
@@ -113,22 +141,6 @@ public class Junction extends Segment implements Comparable<Junction> {
     }
 
     private String determineColor() {
-        String color = "#1a9641";
-        double opacity = 0.1;
-        int weight = 1;
-        if (dangerousnessScore >= 0.5) {
-            color = "#d7191c";
-            opacity = 0.7;
-            weight = 5;
-        } else if (dangerousnessScore >= 0.25) {
-            color = "#ff6600";
-            opacity = 0.7;
-            weight = 5;
-        } else if (dangerousnessScore > 0.05) {
-            color = "#ffff00";
-            opacity = 0.7;
-            weight = 5;
-        }
-        return color+","+opacity + "," + weight;
+        return super.determineColor(dangerousnessScore);
     }
 }

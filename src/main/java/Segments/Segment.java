@@ -22,24 +22,6 @@ public class Segment {
         this.neighbors.add(newNeighbor);
     }
 
-
-    public double calculateDistanceWithHaversine() {
-        double R = 6372800; // In meters
-        double length = 0.0;
-        for (int i = 1; i < lats.length; i++) {
-            double dLat = Math.toRadians(lats[i] - lats[i-1]);
-            double dLon = Math.toRadians(lons[i] - lons[i-1]);
-            double lat1 = Math.toRadians(lats[i-1]);
-            double lat2 = Math.toRadians(lats[i]);
-
-            double a = Math.pow(Math.sin(dLat / 2),2) + Math.pow(Math.sin(dLon / 2),2) * Math.cos(lat1) * Math.cos(lat2);
-            double c = 2 * Math.asin(Math.sqrt(a));
-            length += R * c;
-        }
-
-        return length;
-    }
-
     public Segment() {
 
     }
@@ -55,5 +37,25 @@ public class Segment {
         }
         result.append(poly_vertices_latsArray[poly_vertices_latsArray.length-1]).append(",").append((poly_vertices_lonsArray[poly_vertices_lonsArray.length-1])).append("]");
         return result.toString();
+    }
+
+    public String determineColor(double score) {
+        String color = "#1a9641";
+        double opacity = 0.1;
+        int weight = 1;
+        if (score >= 0.5) {
+            color = "#d7191c";
+            opacity = 0.7;
+            weight = 5;
+        } else if (score >= 0.25) {
+            color = "#ff6600";
+            opacity = 0.7;
+            weight = 5;
+        } else if (score > 0.05) {
+            color = "#ffff00";
+            opacity = 0.7;
+            weight = 5;
+        }
+        return color+","+opacity + "," + weight;
     }
 }

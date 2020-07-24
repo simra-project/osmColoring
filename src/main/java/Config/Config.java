@@ -2,7 +2,7 @@ package Config;
 
 public class Config {
     // Path to the folder containing the region folders, junctions and street segments.
-    public static final String PATH = "D:\\Desktop\\SimRa\\";
+    public static final String PATH = "C:\\Users\\ahmet\\tubCloud\\Shared\\SimRa\\";
     // Specifies which Region to analyze
     public static final String REGION = "Berlin";
 
@@ -23,12 +23,13 @@ public class Config {
 
 
     // Paths to the junctions and segments csv files that contain the extracted osm data
-    public static final String JUNCTIONS_PATH = "D:\\Desktop\\SimRa\\berlin_junctions.csv";
-    public static final String SEGMENTS_PATH = "D:\\Desktop\\SimRa\\berlin_streets.csv";
+    public static final String JUNCTIONS_PATH = "C:\\Users\\ahmet\\tubCloud\\Shared\\SimRa\\berlin_junctions.csv";
+    public static final String SEGMENTS_PATH = "C:\\Users\\ahmet\\tubCloud\\Shared\\SimRa\\berlin_streets.csv";
 
-    public static final String OUTPUT_PATH = "D:\\Desktop\\SimRa\\berlin.html";
+    public static final String HTML_OUTPUT_PATH = "C:\\Users\\ahmet\\tubCloud\\Shared\\SimRa\\berlin.html";
+    public static final String GEOJSON_OUTPUT_PATH = "C:\\Users\\ahmet\\tubCloud\\Shared\\SimRa\\berlin.js";
 
-    public static final String DEBUG_PATH = "D:\\Desktop\\SimRa\\Debug";
+    public static final String DEBUG_PATH = "C:\\Users\\ahmet\\tubCloud\\Shared\\SimRa\\Debug";
 
     // Segments with lower number of rides than RELEVANCE_THRESHOLD are not printed if SHOW_SEGMENTS_WITHOUT_DATA is true.
     // Else, they are of IRRELEVANT_COLOR.

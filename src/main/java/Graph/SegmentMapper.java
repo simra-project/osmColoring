@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.*;
 
 import static Config.Config.*;
+import static Leaflet.GeoJsonPrinter.writeGeoJSON;
 import static Leaflet.LeafletPrinter.*;
 import static Rides.Ride.isInBoundingBox;
 
@@ -72,6 +73,7 @@ public class SegmentMapper {
         System.out.println("number of all incidents: " + (numberOfMatchedIncidents + unmatchedIncidents.size()));
         System.out.println("number of included incidents: " + numberOfMatchedIncidents);
         StringBuilder mapContent = new StringBuilder();
+        StringBuilder geoJSONContent = new StringBuilder();
 
         //int i = 0;
         for (Map.Entry<String,Segment> stringSegmentEntry : segmentMap.entrySet()) {
@@ -216,9 +218,11 @@ public class SegmentMapper {
         for (int i = 0; i < junctionList.size(); i++) {
             if (SHOW_SEGMENTS_WITHOUT_DATA) {
                 mapContent.append(junctionList.get(i).toLeaflet());
+                geoJSONContent.append(junctionList.get(i).toGeoJson());
             } else {
                 if (junctionList.get(i).numberOfRides > RELEVANCE_THRESHOLD) {
-                    mapContent.append(junctionList.get(i).toLeaflet());
+                    mapContent.append(junctionList.get(i).toLeaflet().replaceAll("NaN","-1"));
+                    geoJSONContent.append(junctionList.get(i).toGeoJson().replaceAll("NaN","-1"));
                 }
             }
         }
@@ -251,15 +255,19 @@ public class SegmentMapper {
         for (int i = 0; i < streetList.size(); i++) {
             if (SHOW_SEGMENTS_WITHOUT_DATA) {
                 mapContent.append(streetList.get(i).toLeaflet(debugOnMap));
+                geoJSONContent.append(streetList.get(i).toGeoJson().replaceAll("NaN","-1"));
+
             } else {
                 if (streetList.get(i).numberOfRidesSouthWest + streetList.get(i).numberOfRidesNorthEast> RELEVANCE_THRESHOLD) {
                     mapContent.append(streetList.get(i).toLeaflet(debugOnMap));
+                    geoJSONContent.append(streetList.get(i).toGeoJson().replaceAll("NaN","-1"));
                 }
             }
         }
         // System.out.println("streetList.size(): " + streetList.size());
 
-        writeLeafletHTML(mapContent.toString(),OUTPUT_PATH,REGIONCENTERCOORDS);
+        writeLeafletHTML(mapContent.toString(), HTML_OUTPUT_PATH,REGIONCENTERCOORDS);
+        writeGeoJSON(geoJSONContent.toString(), GEOJSON_OUTPUT_PATH);
     }
 
     // gets a list of ride files from the specified region folder

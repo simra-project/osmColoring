@@ -20,15 +20,9 @@ public class Ride {
     public List<RideBucket> rideBuckets = new ArrayList<>();
     public List<Incident> unmatchedIncidents = new ArrayList<>();
     public int numberOfMatchedIncidents = 0;
-    public List<RideBucket> unmatchedRideBuckets = new ArrayList<>();
-    HashMap<String, Segment> segmentMap;
-    Raster raster;
-    List<Segment> visitedSegments = new ArrayList<>();
+    private List<RideBucket> unmatchedRideBuckets = new ArrayList<>();
 
     public Ride(String pathToRide, HashMap<String, Segment> segmentMap, Raster raster) {
-
-        this.segmentMap = segmentMap;
-        this.raster = raster;
 
         File rideFile = new File(pathToRide);
         try (BufferedReader br = new BufferedReader(new FileReader(rideFile))) {
@@ -70,7 +64,8 @@ public class Ride {
                     if (!line.startsWith(",,") && !line.contains("#")  && !line.startsWith("lat")) {
                         //System.out.println("ride line: " + line);
                         String[] lineArray = line.split(",",-1);
-                        thisRideBucket = new RideBucket(Double.valueOf(lineArray[0]),Double.valueOf(lineArray[1]),Long.valueOf(lineArray[5]),segmentMap,raster, (ArrayList<Segment>)visitedSegments, pathToRide);
+                        List<Segment> visitedSegments = new ArrayList<>();
+                        thisRideBucket = new RideBucket(Double.valueOf(lineArray[0]),Double.valueOf(lineArray[1]),Long.valueOf(lineArray[5]),segmentMap,raster, (ArrayList<Segment>) visitedSegments, pathToRide);
                         if (!thisRideBucket.matchedToSegment && isInBoundingBox(thisRideBucket.lat,thisRideBucket.lon,BBOX_LATS,BBOX_LONS)) {
                             unmatchedRideBuckets.add(thisRideBucket);
                         }

@@ -26,16 +26,15 @@ import static Leaflet.LeafletPrinter.*;
 
 public class RideBucket {
     public double lat, lon;
-    public long timestamp;
+    private long timestamp;
     Segment segment;
-    public String rideName;
     boolean matchedToSegment = true;
 
-    public RideBucket (double lat, double lon, long timestamp, HashMap<String, Segment> segmentMap, Raster raster, ArrayList<Segment> visitedSegments, String pathToRide) {
+    RideBucket(double lat, double lon, long timestamp, HashMap<String, Segment> segmentMap, Raster raster, ArrayList<Segment> visitedSegments, String pathToRide) {
         this.lat = lat;
         this.lon = lon;
         this.timestamp = timestamp;
-        this.rideName = pathToRide.split("\\\\")[5];
+        String rideName = pathToRide.split("\\\\")[5];
         this.segment = findSegment(segmentMap,raster, rideName);
         /*
         Location location = new Location(lat, lon);
@@ -197,27 +196,4 @@ public class RideBucket {
         }
 
     }
-
-    /*
-    private static boolean isInPolygon(double[] polygonLats, double[] polygonLons, double lat, double lon) {
-        Coordinate[] polygonCoordinates = new Coordinate[polygonLats.length];
-        for (int i = 0; i < polygonLats.length; i++) {
-            polygonCoordinates[i] = new Coordinate(polygonLats[i],polygonLons[i]);
-        }
-        Polygon polygon = new GeometryFactory().createPolygon(polygonCoordinates);
-        Point point = new GeometryFactory().createPoint(new Coordinate(lat, lon));
-        DistanceOp distanceOp = new DistanceOp(polygon,point);
-        double distance = distanceOp.distance();
-        System.out.println("distance: " + distance);
-        Path2D polygon1 = new Path2D.Double();
-
-        polygon1.moveTo(polygonLats[0], polygonLons[0]);
-        for(int i = 1; i < polygonLats.length; ++i) {
-            polygon1.lineTo(polygonLats[i], polygonLons[i]);
-        }
-        polygon1.lineTo(polygonLats[0], polygonLons[0]);
-        //polygon1.closePath();
-        return polygon1.contains(lat,lon);
-
-    } */
 }
