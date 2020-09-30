@@ -1,11 +1,12 @@
 package Segments;
 
+import Rides.Incident;
+import Rides.Ride;
 import de.hasenburg.geobroker.commons.model.spatial.Geofence;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class Segment {
     // junctions and streets
@@ -17,6 +18,8 @@ public class Segment {
     public double[] lats, lons;
     public List<Segment> neighbors = new ArrayList<>();
     public double[] poly_vertices_latsArray, poly_vertices_lonsArray;
+    public List<Incident> incidents = new ArrayList<>();
+    public List<Ride> rides = new ArrayList<>();
 
     public void addNeighbor(Segment newNeighbor) {
         this.neighbors.add(newNeighbor);
@@ -57,5 +60,30 @@ public class Segment {
             weight = 5;
         }
         return color+","+opacity + "," + weight;
+    }
+
+    public String toGeoJson() {
+        StringBuilder result = new StringBuilder();
+        result.append(",\n\"markers\":[");
+
+        String p = "";
+        for (int i = 0; i < incidents.size(); i++) {
+            result.append(p);
+            p = ",";
+            Incident thisIncident = incidents.get(i);
+            Date date = new Date(thisIncident.timestamp);
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            String formattedDate = dateFormat.format(date);
+            result.append("[[").append(thisIncident.lon).append(",").append(thisIncident.lat).append("]")
+                    .append(",\"Datum: ").append(formattedDate).append("<br />")
+                    .append("Typ: ").append(thisIncident.getIncidentName()).append("<br />")
+                    .append("Beschreibung: ").append(thisIncident.description.replace("\"","").replace(";komma;",",")).append("<br />")
+                    .append("Beängstigend: ").append(thisIncident.scary).append("<br />")
+                    .append("Beteiligte: ").append(thisIncident.getParticipants()).append("<br />")
+                    .append("Fahrt: " ).append(thisIncident.rideName).append("\"")
+                    .append(",").append(thisIncident.scary).append("]");
+        }
+        result.append("]");
+        return result.toString();
     }
 }

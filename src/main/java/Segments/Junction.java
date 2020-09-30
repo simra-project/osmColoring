@@ -4,10 +4,7 @@ import de.hasenburg.geobroker.commons.model.spatial.Geofence;
 import de.hasenburg.geobroker.commons.model.spatial.Location;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import static Config.Config.*;
 
@@ -87,8 +84,9 @@ public class Junction extends Segment implements Comparable<Junction> {
                 .append(",\n\"ssho\":").append((nonScaryIncidentTypes[4] + scaryIncidentTypes[4]))
                 .append(",\n\"tailgating\":").append((nonScaryIncidentTypes[5] + scaryIncidentTypes[5]))
                 .append(",\n\"near-dooring\":").append((nonScaryIncidentTypes[6] + scaryIncidentTypes[6]))
-                .append(",\n\"dodging an obstacle\":").append((nonScaryIncidentTypes[7] + scaryIncidentTypes[7]))
+                .append(",\n\"dao\":").append((nonScaryIncidentTypes[7] + scaryIncidentTypes[7]))
                 .append(",\n\"other\":").append((nonScaryIncidentTypes[8] + scaryIncidentTypes[8]))
+                .append(super.toGeoJson())
                 .append("},\n\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[");
 
         for (int i = 0; i < poly_vertices_latsArray.length-1; i++) {
@@ -111,7 +109,7 @@ public class Junction extends Segment implements Comparable<Junction> {
                     .append(poly_vertices_lonsArray[i]).append("],\n");
         }
         String color = IRRELEVANT_COLOR;
-        if (numberOfRides >= RELEVANCE_THRESHOLD ) {
+        if (numberOfRides >= RELEVANCE_THRESHOLD_RIDECOUNT) {
             color = determineColor().split(",")[0];
         }
         result.append("\t\t],{fillOpacity:").append(determineColor().split(",")[1])

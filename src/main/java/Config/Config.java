@@ -33,7 +33,9 @@ public class Config {
 
     // Segments with lower number of rides than RELEVANCE_THRESHOLD are not printed if SHOW_SEGMENTS_WITHOUT_DATA is true.
     // Else, they are of IRRELEVANT_COLOR.
-    public static final int RELEVANCE_THRESHOLD = 10;
+    public static final int RELEVANCE_THRESHOLD_RIDECOUNT = 50;
+    public static final int RELEVANCE_THRESHOLD_RIDECOUNT_HIGH_SCORE = 10;
+    public static final double RELEVANCE_THRESHOLD_SCORE = 0.25;
     public static final boolean SHOW_SEGMENTS_WITHOUT_DATA = false;
 
     public static final boolean debugOnMap = false;

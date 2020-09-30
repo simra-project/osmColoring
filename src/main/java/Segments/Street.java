@@ -90,12 +90,13 @@ public class Street extends Segment implements Comparable<Street> {
                 .append(",\n\"nd\":").append((scaryIncidentTypesSouthWest[6] + nonScaryIncidentTypesSouthWest[6] + scaryIncidentTypesNorthEast[6] + nonScaryIncidentTypesNorthEast[6]))
                 .append(",\n\"dao\":").append((scaryIncidentTypesSouthWest[7] + nonScaryIncidentTypesSouthWest[7] + scaryIncidentTypesNorthEast[7] + nonScaryIncidentTypesNorthEast[7]))
                 .append(",\n\"other\":").append((scaryIncidentTypesSouthWest[8] + nonScaryIncidentTypesSouthWest[8] + scaryIncidentTypesNorthEast[8] + nonScaryIncidentTypesNorthEast[8]))
+                .append(super.toGeoJson())
                 .append("},\n\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[");
 
         for (int i = 0; i < poly_vertices_latsArray.length-1; i++) {
             result.append("[").append(poly_vertices_lonsArray[i]).append(",").append(poly_vertices_latsArray[i]).append("],");
         }
-        result.append("[").append(poly_vertices_lonsArray[poly_vertices_lonsArray.length-1]).append(",").append(poly_vertices_latsArray[poly_vertices_latsArray.length-1]).append("]]]}},");
+        result.append("[").append(poly_vertices_lonsArray[poly_vertices_lonsArray.length-1]).append(",").append(poly_vertices_latsArray[poly_vertices_latsArray.length-1]).append("]]]}},\n\n");
 
 
 
@@ -111,7 +112,7 @@ public class Street extends Segment implements Comparable<Street> {
                     .append(poly_vertices_lonsArray[i]).append("],\n");
         }
         String color = IRRELEVANT_COLOR;
-        if (numberOfRidesSouthWest + numberOfRidesNorthEast >= RELEVANCE_THRESHOLD ) {
+        if (numberOfRidesSouthWest + numberOfRidesNorthEast >= RELEVANCE_THRESHOLD_RIDECOUNT) {
             color = determineColor().split(",")[0];
         }
         result.append("\t\t],{fillOpacity:").append(determineColor().split(",")[1])

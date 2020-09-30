@@ -3,7 +3,7 @@ package Rides;
 public class Incident {
     public double lat, lon;
     public long timestamp;
-    boolean child, trailer, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, scary;
+    public boolean child, trailer, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, scary;
     int pLoc, incident, bike;
     public String description, rideName;
 
@@ -30,5 +30,45 @@ public class Incident {
         this.i10 = i10;
         this.rideName = rideName;
     }
+
+    public String toGeoJson() {
+        StringBuilder result = new StringBuilder();
+        result.append("{\"type\":\"Feature\",")
+                .append("\"properties\":{\"type\":\"Incident\",")
+                .append("\"incident\":\"").append(getIncidentName()).append("\",");
+        if(description.length()>0) {
+            result.append("\"description\":\"").append(description.replace("\"","").replace(";komma;",",")).append("\",");
+        }
+
+        result.append("\"scary\":\"").append(scary).append("\",")
+                .append("\"participants\":\"").append(getParticipants())
+                .append("\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[").append(lon).append(",").append(lat).append("]}}\n,");
+        return result.toString();
+    }
+
+    public String getParticipants() {
+        boolean[] participantBooleans = {i1,i2,i3,i4,i5,i6,i7,i8,i10,i9};
+        // String[] participantStrings = {"Bus/Coach","Cyclist","Pedestrian","Delivery Van","Lorry/Truck","Motorcyclist","Car","Taxi/Cab","Electric Scooter","Other"};
+        String[] participantStrings = {"Bus","Fahrrad","Fußgänger","Lieferwagen","LKW","Motorrad","PKW","Taxi","E-Scooter","Sonstiges"};
+
+        StringBuilder result = new StringBuilder();
+        String p = "";
+        for (int i = 0; i < participantBooleans.length; i++) {
+            if (participantBooleans[i]) {
+                result.append(p);
+                p = ",";
+                result.append(participantStrings[i]);
+            }
+        }
+        return result.toString();
+    }
+
+    public String getIncidentName() {
+        //String[] incidentNames = {"Close Pass", "Someone pulling in or out","Near left or right hook","Someone approaching head on","Tailgating","Near-Dooring","Dodging an obstacle (e.g., a dog)","Other"};
+        String[] incidentNames = {"Zu dichtes Überholen", "Ein- oder ausparkendes Fahrzeug","Beinahe-Abbiegeunfall","Entgegenkommender Verkehrsteilnehmer","Zu dichtes Auffahren","Beinahe-Dooring","Einem Hindernis ausweichen (z.B. Hund)","Sonstiges"};
+
+        return incidentNames[incident-1];
+    }
+
 
 }

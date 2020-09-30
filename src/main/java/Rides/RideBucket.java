@@ -26,46 +26,20 @@ import static Leaflet.LeafletPrinter.*;
 
 public class RideBucket {
     public double lat, lon;
-    private long timestamp;
+    public long timestamp;
     Segment segment;
     boolean matchedToSegment = true;
+    String rideName;
 
-    RideBucket(double lat, double lon, long timestamp, HashMap<String, Segment> segmentMap, Raster raster, ArrayList<Segment> visitedSegments, String pathToRide) {
+    RideBucket(double lat, double lon, long timestamp, HashMap<String, Segment> segmentMap, Raster raster, ArrayList<Segment> visitedSegments, String pathToRide, Ride owner) {
         this.lat = lat;
         this.lon = lon;
         this.timestamp = timestamp;
-        String rideName = pathToRide.split("\\\\")[5];
+        this.rideName = pathToRide.split("\\\\")[8];
         this.segment = findSegment(segmentMap,raster, rideName);
-        /*
-        Location location = new Location(lat, lon);
-        List<ImmutablePair<String, String>> segmentsContainingRideBucket = raster.getSubscriptionIdsInRasterEntryForPublisherLocation(location);
-        // junctions and streets overlap. If a location is in both segments, take the junction as segment
-        if (segmentsContainingRideBucket.size()>0){
-            System.out.println("Ride: " + pathToRide);
-            System.out.println("RiceBucket: " + lat + "," + lon + "," + timestamp);
-            System.out.println("segmentsContainingRideBucket size: " + segmentsContainingRideBucket.size());
-            for (int i = 0; i < segmentsContainingRideBucket.size(); i++) {
-                ImmutablePair<String, String> thisPair = segmentsContainingRideBucket.get(i);
-                Segment segment = segmentMap.get(segmentsContainingRideBucket.get(i).getRight());
-                //boolean found = isInPolygon(segment.poly_vertices_latsArray,segment.poly_vertices_lonsArray,lat,lon);
-                //if (found) {
-                //    System.out.println(lat + "," + lon + " found in " + segment.getClass() + " " + Arrays.toString(segment.poly_vertices_latsArray) + " and " + Arrays.toString(segment.poly_vertices_lonsArray));
-                //}
-            }
-
+        if (this.segment != null) {
+            this.segment.rides.add(owner);
         }
-        for (int i = 0; i < segmentsContainingRideBucket.size(); i++) {
-            String segmentMapKey = segmentsContainingRideBucket.get(i).getRight();
-            Segment entrySegment = segmentMap.get(segmentMapKey);
-            segment = entrySegment;
-
-            // System.out.println(lat + "," + lon + " matched segment with id " + segment.id + " and coordinates " + Arrays.toString(segment.lats) + " ; " + Arrays.toString(segment.lons) +  " is junction: " + segment.isJunction);
-
-            if (entrySegment instanceof Junction) {
-                break;
-            }
-        }
-       */
     }
 
     private Segment findSegment(HashMap<String, Segment> segmentMap, Raster raster, String rideName) {
@@ -88,7 +62,7 @@ public class RideBucket {
 
             // calculate distance to actual segment
             Segment actualSegment = segmentMap.get(segmentCandidates.get(i).getRight());
-            double distance = calculateDistanceFromPointToPolygon(actualSegment,lat,lon);// distanceOp.distance();
+            double distance = calculateDistanceFromPointToPolygon(actualSegment,lat,lon);
 
             // update nearest junction / street and their distances respectively
             if (actualSegment instanceof Junction && distance <= distanceToNearestJunction) {
@@ -103,8 +77,8 @@ public class RideBucket {
 
                 }
             }
-            debug.append(leafletPolygon(actualSegment.poly_vertices_latsArray, actualSegment.poly_vertices_lonsArray, "distance: " + distance))
-                    .append(leafletMarker(lat, lon, rideName, timestamp, "distanceToNearestJunction: " + distanceToNearestJunction + "<br>distanceToNearestStreet: " + distanceToNearestStreet + "<br> MATCH_THRESHOLD: " + MATCH_THRESHOLD));
+            //debug.append(leafletPolygon(actualSegment.poly_vertices_latsArray, actualSegment.poly_vertices_lonsArray, "distance: " + distance))
+            //        .append(leafletMarker(lat, lon, rideName, timestamp, "distanceToNearestJunction: " + distanceToNearestJunction + "<br>distanceToNearestStreet: " + distanceToNearestStreet + "<br> MATCH_THRESHOLD: " + MATCH_THRESHOLD));
 
             /*
             if (timestamp == 1565680041553L) {

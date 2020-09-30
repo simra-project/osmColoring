@@ -21,6 +21,7 @@ public class SegmentMapper {
     static List<Junction> mostDangerousJunctions = new ArrayList<>();
     static List<Street> mostDangerousStreetsSouthWest = new ArrayList<>();
     static List<Street> mostDangerousStreetsNorthEast = new ArrayList<>();
+    static int numberOfRelevantSegments = 0;
 
     public static void main(String[] args) {
         // Creating the Geobroker Raster. See the documentation of the Geobroker: https://github.com/MoeweX/geobroker
@@ -44,6 +45,8 @@ public class SegmentMapper {
         int numberOfMatchedIncidents = 0;
         int numberOfUnmatchedIncidents = 0;
         List<Incident> unmatchedIncidents = new ArrayList<>();
+        StringBuilder mapContent = new StringBuilder();
+        StringBuilder geoJSONContent = new StringBuilder();
         for (int i = 0; i < rideFolder.length; i++) {
             Ride ride = new Ride(rideFolder[i].getPath(),segmentMap,raster);
             if ( ride.rideBuckets.size() > 0 && isInBoundingBox(ride.rideBuckets.get(0).lat,ride.rideBuckets.get(0).lon,BBOX_LATS,BBOX_LONS)) {
@@ -60,7 +63,6 @@ public class SegmentMapper {
                 content.append(leafletMarker(unmatchedRideBuckets.get(j).lat,unmatchedRideBuckets.get(j).lon,unmatchedRideBuckets.get(j).rideName,unmatchedRideBuckets.get(j).timestamp));
             }
              */
-
         }
         for (int i = 0; i < unmatchedIncidents.size(); i++) {
             Incident thisIncident = unmatchedIncidents.get(i);
@@ -72,12 +74,13 @@ public class SegmentMapper {
         System.out.println("number of included rides: " + numberOfIncludedRides);
         System.out.println("number of all incidents: " + (numberOfMatchedIncidents + unmatchedIncidents.size()));
         System.out.println("number of included incidents: " + numberOfMatchedIncidents);
-        StringBuilder mapContent = new StringBuilder();
-        StringBuilder geoJSONContent = new StringBuilder();
 
-        //int i = 0;
+        int numberOfSegmentsWithRides = 0;
         for (Map.Entry<String,Segment> stringSegmentEntry : segmentMap.entrySet()) {
             Segment segment = stringSegmentEntry.getValue();
+            if(hasRide(segment)) {
+                numberOfSegmentsWithRides++;
+            }
             if (segment instanceof Junction) {
                 Junction junction = (Junction) segment;
                 if (mostDangerousJunctions.size()<3) {
@@ -187,12 +190,15 @@ public class SegmentMapper {
                 }
                 */
             }
-            content.append(leafletPolygon(segment.poly_vertices_latsArray,segment.poly_vertices_lonsArray));
+            // content.append(leafletPolygon(segment.poly_vertices_latsArray,segment.poly_vertices_lonsArray));
+            addSegmentToGeoJson(segment,geoJSONContent);
         }
-        writeLeafletHTML(content.toString(), DEBUG_PATH + "\\unmatchedIncidents.html",REGIONCENTERCOORDS);
-
+        System.out.println("Number of Segments: " + segmentMap.size());
+        System.out.println("Number of Segments with at least 1 ride: " + numberOfSegmentsWithRides);
+        System.out.println("Number of relevant segments: " + numberOfRelevantSegments);
+        // writeLeafletHTML(content.toString(), DEBUG_PATH + "\\unmatchedIncidents.html",REGIONCENTERCOORDS);
+        /*
         junctionList.sort(Collections.reverseOrder());
-
         double junctionsTopXAverageScore = 0.0;
         int junctionsCounted = 0;
         int topJunctionCount = junctionList.size()*(TOPXPERCENT/100);
@@ -204,7 +210,7 @@ public class SegmentMapper {
                     break;
                 }
             } else {
-                if (junctionList.get(i).numberOfRides > RELEVANCE_THRESHOLD) {
+                if (junctionList.get(i).numberOfRides >= RELEVANCE_THRESHOLD_RIDECOUNT || junctionList.get(i).getScore() >= RELEVANCE_THRESHOLD_SCORE) {
                     junctionsTopXAverageScore += junctionList.get(i).getScore();
                     junctionsCounted++;
                     if (junctionsCounted >= topJunctionCount) {
@@ -214,25 +220,23 @@ public class SegmentMapper {
             }
         }
         //junctionsTopXAverageScore = junctionsTopXAverageScore / topJunctionCount;
-
         for (int i = 0; i < junctionList.size(); i++) {
             if (SHOW_SEGMENTS_WITHOUT_DATA) {
-                mapContent.append(junctionList.get(i).toLeaflet());
-                geoJSONContent.append(junctionList.get(i).toGeoJson());
+                // mapContent.append(junctionList.get(i).toLeaflet().replaceAll("NaN","-1"));
+                geoJSONContent.append(junctionList.get(i).toGeoJson().replaceAll("NaN","-1"));
             } else {
-                if (junctionList.get(i).numberOfRides > RELEVANCE_THRESHOLD) {
-                    mapContent.append(junctionList.get(i).toLeaflet().replaceAll("NaN","-1"));
+                if (isRelevant(junctionList.get(i))) {
+                    // mapContent.append(junctionList.get(i).toLeaflet().replaceAll("NaN","-1"));
                     geoJSONContent.append(junctionList.get(i).toGeoJson().replaceAll("NaN","-1"));
                 }
             }
         }
-
         System.out.println("junctionList.size(): " + junctionList.size());
-
         streetList.sort(Collections.reverseOrder());
         double streetsTopXAverageScore = 0.0;
         int streetsCounted = 0;
         int topStreetCount = streetList.size()/TOPXPERCENT;
+
         for (int i = 0; i < streetList.size(); i++) {
             if (SHOW_SEGMENTS_WITHOUT_DATA) {
                 streetsTopXAverageScore += streetList.get(i).getScore();
@@ -241,7 +245,7 @@ public class SegmentMapper {
                     break;
                 }
             } else {
-                if (streetList.get(i).numberOfRidesSouthWest + streetList.get(i).numberOfRidesNorthEast > RELEVANCE_THRESHOLD) {
+                if (streetList.get(i).numberOfRidesSouthWest + streetList.get(i).numberOfRidesNorthEast >= RELEVANCE_THRESHOLD_RIDECOUNT || streetList.get(i).getScore() >= RELEVANCE_THRESHOLD_SCORE) {
                     streetsTopXAverageScore += streetList.get(i).getScore();
                     streetsCounted++;
                     if (streetsCounted >= topStreetCount) {
@@ -254,20 +258,36 @@ public class SegmentMapper {
 
         for (int i = 0; i < streetList.size(); i++) {
             if (SHOW_SEGMENTS_WITHOUT_DATA) {
-                mapContent.append(streetList.get(i).toLeaflet(debugOnMap));
+                // mapContent.append(streetList.get(i).toLeaflet(debugOnMap));
                 geoJSONContent.append(streetList.get(i).toGeoJson().replaceAll("NaN","-1"));
 
             } else {
-                if (streetList.get(i).numberOfRidesSouthWest + streetList.get(i).numberOfRidesNorthEast> RELEVANCE_THRESHOLD) {
-                    mapContent.append(streetList.get(i).toLeaflet(debugOnMap));
+                if (isRelevant(streetList.get(i))) {
+                    // mapContent.append(streetList.get(i).toLeaflet(debugOnMap));
                     geoJSONContent.append(streetList.get(i).toGeoJson().replaceAll("NaN","-1"));
                 }
             }
         }
+        */
         // System.out.println("streetList.size(): " + streetList.size());
-
-        writeLeafletHTML(mapContent.toString(), HTML_OUTPUT_PATH,REGIONCENTERCOORDS);
+        // writeLeafletHTML(mapContent.toString(), HTML_OUTPUT_PATH,REGIONCENTERCOORDS);
         writeGeoJSON(geoJSONContent.toString(), GEOJSON_OUTPUT_PATH);
+    }
+
+    private static boolean hasRide(Segment segment) {
+        return segment.rides.size() > 0;
+    }
+
+    private static void addSegmentToGeoJson(Segment segment, StringBuilder geoJSONContent) {
+        if (SHOW_SEGMENTS_WITHOUT_DATA) {
+            geoJSONContent.append(segment.toGeoJson().replaceAll("NaN","-1"));
+            numberOfRelevantSegments++;
+        } else {
+            if (isRelevant(segment)) {
+                geoJSONContent.append(segment.toGeoJson().replaceAll("NaN","-1"));
+                numberOfRelevantSegments++;
+            }
+        }
     }
 
     // gets a list of ride files from the specified region folder
@@ -282,4 +302,28 @@ public class SegmentMapper {
         }
         return rideFiles;
     }
+
+    public static boolean isRelevant(Segment segment) {
+        // gelb 50 Fahrten oder 10 Fahrten und mindestens orange
+        // nicht jedes davon schwerpunkt
+        /*
+        if (segment instanceof Junction) {
+            Junction junction = (Junction) segment;
+            return (junction.numberOfRides >= RELEVANCE_THRESHOLD_RIDECOUNT) || ((junction.getScore() >= RELEVANCE_THRESHOLD_SCORE) && junction.numberOfRides >= RELEVANCE_THRESHOLD_RIDECOUNT_HIGH_SCORE );
+        } else {
+            Street street = (Street) segment;
+            return (street.numberOfRidesSouthWest + street.numberOfRidesNorthEast >= RELEVANCE_THRESHOLD_RIDECOUNT) || ((street.getScore() >= RELEVANCE_THRESHOLD_SCORE) && (street.numberOfRidesSouthWest + street.numberOfRidesNorthEast >= RELEVANCE_THRESHOLD_RIDECOUNT_HIGH_SCORE) );
+        }
+        */
+        if (segment instanceof Junction) {
+            Junction junction = (Junction) segment;
+            return (junction.numberOfRides >= RELEVANCE_THRESHOLD_RIDECOUNT_HIGH_SCORE );
+        } else {
+            Street street = (Street) segment;
+            return (street.numberOfRidesSouthWest + street.numberOfRidesNorthEast >= RELEVANCE_THRESHOLD_RIDECOUNT_HIGH_SCORE);
+        }
+
+    }
+
+
 }
