@@ -35,7 +35,7 @@ public class RideBucket {
         this.lat = lat;
         this.lon = lon;
         this.timestamp = timestamp;
-        this.rideName = pathToRide.split("\\\\")[8];
+        this.rideName = Paths.get(pathToRide).getFileName().toString();
         this.segment = findSegment(segmentMap,raster, rideName);
         if (this.segment != null) {
             this.segment.rides.add(owner);
