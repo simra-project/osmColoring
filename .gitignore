@@ -12,3 +12,8 @@ target/*
 
 # Log file
 *.log
+
+# Data
+simra_data/
+output_data/
+osm_data/

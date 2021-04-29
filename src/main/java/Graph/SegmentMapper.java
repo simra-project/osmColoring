@@ -15,6 +15,9 @@ import static Config.Config.*;
 import static Leaflet.GeoJsonPrinter.writeGeoJSON;
 import static Leaflet.LeafletPrinter.*;
 import static Rides.Ride.isInBoundingBox;
+import static main.UtilKt.getRidesOfRegionAndUNKNOWN;
+
+import main.CommandLineArguments;
 
 public class SegmentMapper {
 
@@ -23,7 +26,7 @@ public class SegmentMapper {
     static List<Street> mostDangerousStreetsNorthEast = new ArrayList<>();
     static int numberOfRelevantSegments = 0;
 
-    public static void main(String[] args) {
+    public static void doSegmentMapping(CommandLineArguments cla) {
         // Creating the Geobroker Raster. See the documentation of the Geobroker: https://github.com/MoeweX/geobroker
         Raster raster = new Raster(1000);
 
@@ -37,7 +40,7 @@ public class SegmentMapper {
         List <Junction> junctionList = new ArrayList<>();
 
         // Contains the ride files of specified region.
-        File[] rideFolder = getRidesOfRegion(REGION);
+        List<File> rideFolder = getRidesOfRegionAndUNKNOWN(cla.getSimraRoot(), cla.getRegion());
         StringBuilder content = new StringBuilder();
         int numberOfUnmatchedRideBuckets = 0;
         int numberOfAllRides = 0;
@@ -47,8 +50,8 @@ public class SegmentMapper {
         List<Incident> unmatchedIncidents = new ArrayList<>();
         StringBuilder mapContent = new StringBuilder();
         StringBuilder geoJSONContent = new StringBuilder();
-        for (int i = 0; i < rideFolder.length; i++) {
-            Ride ride = new Ride(rideFolder[i].getPath(),segmentMap,raster);
+        for (int i = 0; i < rideFolder.size(); i++) {
+            Ride ride = new Ride(rideFolder.get(i).getPath(),segmentMap,raster);
             if ( ride.rideBuckets.size() > 0 && isInBoundingBox(ride.rideBuckets.get(0).lat,ride.rideBuckets.get(0).lon,BBOX_LATS,BBOX_LONS)) {
                 numberOfIncludedRides++;
                 numberOfMatchedIncidents += ride.numberOfMatchedIncidents;
@@ -288,19 +291,6 @@ public class SegmentMapper {
                 numberOfRelevantSegments++;
             }
         }
-    }
-
-    // gets a list of ride files from the specified region folder
-    private static File[] getRidesOfRegion(String region) {
-        File[] regionFolder = new File(PATH + region + "\\Rides").listFiles();
-        File[] unknownFolder = new File(PATH + "UNKNOWN\\Rides").listFiles();
-        File[] rideFiles = Arrays.copyOf(regionFolder, regionFolder.length + unknownFolder.length);
-        System.arraycopy(unknownFolder, 0, rideFiles, regionFolder.length, unknownFolder.length);
-        if (rideFiles == null) {
-            System.err.println("folder at " + PATH + region + "\\Rides is empty");
-            System.exit(-1);
-        }
-        return rideFiles;
     }
 
     public static boolean isRelevant(Segment segment) {

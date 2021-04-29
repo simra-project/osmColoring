@@ -1,11 +1,6 @@
 package Config;
 
 public class Config {
-    // Path to the folder containing the region folders, junctions and street segments.
-    public static final String PATH = "E:\\tubCloud\\Regions\\";
-    // Specifies which Region to analyze
-    public static final String REGION = "Leipzig";
-
     // center coordinates for Charlottenburg: 52.51616, 13.31339
     // for Bern: 46.946338, 7.443721
     // for Leipzig: 51.3403333,12.37475
@@ -26,13 +21,13 @@ public class Config {
 
 
     // Paths to the junctions and segments csv files that contain the extracted osm data
-    public static final String JUNCTIONS_PATH = "E:\\tubCloud\\leipzig_junctions.csv";
-    public static final String SEGMENTS_PATH = "E:\\tubCloud\\leipzig_streets.csv";
+    public static final String JUNCTIONS_PATH = "osm_data/leipzig_junctions.csv";
+    public static final String SEGMENTS_PATH = "osm_data/leipzig_streets.csv";
 
-    public static final String HTML_OUTPUT_PATH = "E:\\tubCloud\\leipzig.html";
-    public static final String GEOJSON_OUTPUT_PATH = "E:\\tubCloud\\leipzig.js";
+    public static final String HTML_OUTPUT_PATH = "output_data/leipzig.html";
+    public static final String GEOJSON_OUTPUT_PATH = "output_data/leipzig.json";
 
-    public static final String DEBUG_PATH = "E:\\tubCloud\\Debug";
+    public static final String DEBUG_PATH = "output_data/debug";
 
     // Segments with lower number of rides than RELEVANCE_THRESHOLD are not printed if SHOW_SEGMENTS_WITHOUT_DATA is true.
     // Else, they are of IRRELEVANT_COLOR.

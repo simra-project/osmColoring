@@ -1,5 +1,7 @@
 package Leaflet;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -8,7 +10,7 @@ import java.nio.file.StandardOpenOption;
 public class GeoJsonPrinter {
     long id;
     public static String geoJSONHead() {
-        return "var segments = {\"type\":\"FeatureCollection\",\"features\":[";
+        return "{\"type\":\"FeatureCollection\",\"features\":[";
     }
 
     public String geoJsonPolygon() {
@@ -20,11 +22,15 @@ public class GeoJsonPrinter {
         return sb.toString();
     }
 
-    public static String geoJSONTail() { return "]};";}
+    public static String geoJSONTail() { return "]}";}
 
     public static void writeGeoJSON(String content, String filePath) {
         try {
-            Files.write(Paths.get(filePath), ((geoJSONHead() + content + geoJSONTail())).getBytes(),
+            String json = geoJSONHead() + content + geoJSONTail();
+            JSONObject obj = new JSONObject(json);
+            String cleanJson = obj.toString(0);
+
+            Files.write(Paths.get(filePath), cleanJson.getBytes(),
                     StandardOpenOption.CREATE);
         } catch (IOException e) {
             e.printStackTrace();
