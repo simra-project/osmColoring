@@ -3,7 +3,7 @@ package Graph;
 import Segments.Junction;
 import Segments.Segment;
 import Segments.Street;
-import de.hasenburg.geobroker.server.storage.Raster;
+import geobroker.Raster;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.io.*;

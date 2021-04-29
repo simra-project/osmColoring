@@ -1,7 +1,7 @@
 package Segments;
 
-import de.hasenburg.geobroker.commons.model.spatial.Geofence;
-import de.hasenburg.geobroker.commons.model.spatial.Location;
+import geobroker.Geofence;
+import geobroker.Location;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

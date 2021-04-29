@@ -6,7 +6,7 @@ import Rides.RideBucket;
 import Segments.Junction;
 import Segments.Segment;
 import Segments.Street;
-import de.hasenburg.geobroker.server.storage.Raster;
+import geobroker.Raster;
 
 import java.io.File;
 import java.util.*;

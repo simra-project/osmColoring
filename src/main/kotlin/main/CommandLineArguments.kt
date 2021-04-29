@@ -23,7 +23,7 @@ class CommandLineArguments(parser: ArgParser) {
         .storing("-r", "--region", help = "SimRa region to parse")
         .default("Leipzig")
         .addValidator {
-            check(simraRoot.listFiles()!!.toList().map { it.nameWithoutExtension }.contains(value)) {
+            require(simraRoot.listFiles()!!.toList().map { it.nameWithoutExtension }.contains(value)) {
                 "SimRa root folder ${simraRoot.absolutePath} does not contain region $value"
             }
         }

@@ -20,4 +20,9 @@ git checkout simra
 mvn install -DskipTests
 ```
 
-## 
+## ToDos
+
+- Rename RasterAPI
+- Remove org.locationtech.jts.io dependency
+- Add WKT Test for Location and Geofence
+- Add Tests for Raster and RasterEntry
