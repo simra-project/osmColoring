@@ -28,4 +28,12 @@ class CommandLineArguments(parser: ArgParser) {
             }
         }
 
+    /*****************************************************************
+     * Generated methods
+     ****************************************************************/
+
+    override fun toString(): String {
+        return "CommandLineArguments(simraRoot=${simraRoot.absolutePath}, region='$region')"
+    }
+
 }

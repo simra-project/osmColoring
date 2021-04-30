@@ -5,6 +5,8 @@ import Segments.Segment;
 import Segments.Street;
 import geobroker.Raster;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.util.*;
@@ -14,10 +16,12 @@ import static Config.Config.SEGMENTS_PATH;
 
 public class SegmentImporter {
 
+    private static Logger logger = LogManager.getLogger();
+
     private static Map<String,Segment> segmentMap = new HashMap<>();
     public static HashMap<String,Segment> importSegments(Raster raster) {
         // read the junctions and put the into segmentMap
-        System.out.println("importing junctions from: " + JUNCTIONS_PATH);
+        logger.info("Importing junctions from: " + JUNCTIONS_PATH);
         File file = new File(JUNCTIONS_PATH);
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             // Skip header id|lat|lon|highwayName|highwaytypes|highwaylanes|poly_vertices_lats|poly_vertices_lons
@@ -97,9 +101,9 @@ public class SegmentImporter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("segmentMap size after adding junctions: " + segmentMap.size());
+        logger.info("SegmentMap size after adding junctions: " + segmentMap.size());
         // read the streets and put the into segmentMap
-        System.out.println("importing street segments from: " + SEGMENTS_PATH);
+        logger.info("Importing street segments from: " + SEGMENTS_PATH);
         file = new File(SEGMENTS_PATH);
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             // Skip header id|lats|lons|highwayName|highwaytype|highwaylanes|poly_vertices_lats|poly_vertices_lons

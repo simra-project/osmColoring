@@ -144,7 +144,7 @@ class Raster(val granularity: Int) {
      * @param location - the location
      * @return - the index
      */
-    private fun calculateIndexLocation(location: Location): Location {
+    fun calculateIndexLocation(location: Location): Location {
         val latIndex = floor(location.lat * granularity) / granularity
         val lonIndex = floor(location.lon * granularity) / granularity
 
@@ -157,7 +157,7 @@ class Raster(val granularity: Int) {
      * @param geofence - the geofence
      * @return - a list of [RasterEntry]s
      */
-    private fun calculateIndexLocations(geofence: Geofence): List<RasterEntry> {
+    fun calculateIndexLocations(geofence: Geofence): List<RasterEntry> {
         // get north east and south west indices
         val northEastIndex = calculateIndexLocation(geofence.boundingBoxNorthEast)
         val southWestIndex = calculateIndexLocation(geofence.boundingBoxSouthWest)

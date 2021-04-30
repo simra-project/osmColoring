@@ -4,6 +4,7 @@ import Config.Config
 import java.io.File
 import java.util.*
 import org.apache.logging.log4j.LogManager
+import kotlin.random.Random.Default.nextInt
 
 private val logger = LogManager.getLogger()
 
@@ -26,4 +27,22 @@ fun getRidesOfRegionAndUNKNOWN(simraRoot: File, region: String): List<File> {
     }
 
     return regionRides + unknownRides
+}
+
+/**
+ * Returns true with the given chance.
+ *
+ * @param chance - the chance to return true (0 - 100)
+ * @return true, if lucky
+ */
+fun getTrueWithChance(chance: Int): Boolean {
+    @Suppress("NAME_SHADOWING") var chance = chance
+    // normalize
+    if (chance > 100) {
+        chance = 100
+    } else if (chance < 0) {
+        chance = 0
+    }
+    val random = nextInt(100) + 1 // not 0
+    return random <= chance
 }

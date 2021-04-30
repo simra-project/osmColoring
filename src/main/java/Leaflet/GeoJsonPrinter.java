@@ -1,5 +1,7 @@
 package Leaflet;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -25,6 +27,8 @@ public class GeoJsonPrinter {
     public static void writeGeoJSON(String content, String filePath) {
         try {
             String json = geoJSONHead() + content + geoJSONTail();
+//            JSONObject jsonObject = new JSONObject(json);
+//            json = jsonObject.toString(1);
 
             Files.write(Paths.get(filePath), json.getBytes(),
                     StandardOpenOption.CREATE);

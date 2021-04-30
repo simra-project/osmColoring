@@ -9,6 +9,7 @@ import geobroker.SpatialContextK.GEO
 import org.apache.logging.log4j.LogManager
 import org.locationtech.spatial4j.distance.DistanceUtils
 import org.locationtech.spatial4j.shape.Point
+import org.locationtech.spatial4j.shape.Shape
 import kotlin.math.min
 import kotlin.random.Random
 
@@ -83,6 +84,11 @@ class Location(val point: Point) {
             )
         }
 
+        fun fromWkt(wkt: String): Location {
+            val reader = GEO.formats.wktReader as CustomWKTReader
+            return Location(reader.parse(wkt) as Point)
+        }
+
     }
 
     /*****************************************************************
@@ -105,7 +111,7 @@ class Location(val point: Point) {
     }
 
     override fun toString(): String {
-        return "Location(lat=$lat, lon=$lon)"
+        return GEO.formats.wktWriter.toString(point)
     }
 
 }

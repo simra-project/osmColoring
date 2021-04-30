@@ -14,6 +14,15 @@ private val logger = LogManager.getLogger()
 class GeofenceTest {
 
     @Test
+    fun testWKT() {
+        val fence = berlinRectangle()
+        val wkt = fence.toString()
+        logger.info("WKT of berlin rectangle is $fence")
+        val fence2 = Geofence.fromWkt(wkt)
+        Assert.assertEquals(fence2, fence)
+    }
+
+    @Test
     fun testEquals() {
         val fence = berlinRectangle()
         val fence2 = berlinRectangle()

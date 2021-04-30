@@ -15,7 +15,6 @@ private val logger = LogManager.getLogger()
 class LocationTest {
 
     private var location: Location = Location.random()
-    private val n = 100000
 
     @Before
     fun setUp() {
@@ -27,6 +26,15 @@ class LocationTest {
     fun equalsAndRandom() {
         Assert.assertEquals(location, location)
         Assert.assertNotEquals(location, Location.random())
+    }
+
+    @Test
+    fun testWKT() {
+        val p1 = Location.random()
+        val wkt = p1.toString()
+        logger.info("Wkt of location is $wkt")
+        val p2 = Location.fromWkt(wkt)
+        Assert.assertEquals(p2, p1)
     }
 
     @Test

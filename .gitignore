@@ -17,3 +17,6 @@ target/*
 simra_data/
 output_data/
 osm_data/
+
+## Other
+.DS_Store

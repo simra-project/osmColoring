@@ -18,8 +18,12 @@ import static Rides.Ride.isInBoundingBox;
 import static main.UtilKt.getRidesOfRegionAndUNKNOWN;
 
 import main.CommandLineArguments;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class SegmentMapper {
+
+    private static Logger logger = LogManager.getLogger();
 
     static List<Junction> mostDangerousJunctions = new ArrayList<>();
     static List<Street> mostDangerousStreetsSouthWest = new ArrayList<>();
@@ -72,11 +76,11 @@ public class SegmentMapper {
             content.append(leafletMarker(thisIncident.lat,thisIncident.lon,thisIncident.rideName,thisIncident.timestamp));
         }
 
-        System.out.println("number of unmatched ride buckets: " + numberOfUnmatchedRideBuckets);
-        System.out.println("number of all rides: " + numberOfAllRides);
-        System.out.println("number of included rides: " + numberOfIncludedRides);
-        System.out.println("number of all incidents: " + (numberOfMatchedIncidents + unmatchedIncidents.size()));
-        System.out.println("number of included incidents: " + numberOfMatchedIncidents);
+        logger.debug("number of unmatched ride buckets: " + numberOfUnmatchedRideBuckets);
+        logger.debug("number of all rides: " + numberOfAllRides);
+        logger.debug("number of included rides: " + numberOfIncludedRides);
+        logger.debug("number of all incidents: " + (numberOfMatchedIncidents + unmatchedIncidents.size()));
+        logger.debug("number of included incidents: " + numberOfMatchedIncidents);
 
         int numberOfSegmentsWithRides = 0;
         for (Map.Entry<String,Segment> stringSegmentEntry : segmentMap.entrySet()) {
@@ -196,9 +200,9 @@ public class SegmentMapper {
             // content.append(leafletPolygon(segment.poly_vertices_latsArray,segment.poly_vertices_lonsArray));
             addSegmentToGeoJson(segment,geoJSONContent);
         }
-        System.out.println("Number of Segments: " + segmentMap.size());
-        System.out.println("Number of Segments with at least 1 ride: " + numberOfSegmentsWithRides);
-        System.out.println("Number of relevant segments: " + numberOfRelevantSegments);
+        logger.info("Number of Segments: " + segmentMap.size());
+        logger.info("Number of Segments with at least 1 ride: " + numberOfSegmentsWithRides);
+        logger.info("Number of relevant segments: " + numberOfRelevantSegments);
         // writeLeafletHTML(content.toString(), DEBUG_PATH + "\\unmatchedIncidents.html",REGIONCENTERCOORDS);
         /*
         junctionList.sort(Collections.reverseOrder());
