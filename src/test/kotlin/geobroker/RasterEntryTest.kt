@@ -7,7 +7,6 @@ package geobroker
 
 import main.getTrueWithChance
 import org.apache.commons.lang3.tuple.ImmutablePair
-import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import org.junit.After
 import org.junit.Assert.*

@@ -9,7 +9,6 @@ import geobroker.SpatialContextK.GEO
 import org.apache.logging.log4j.LogManager
 import org.locationtech.spatial4j.distance.DistanceUtils
 import org.locationtech.spatial4j.shape.Point
-import org.locationtech.spatial4j.shape.Shape
 import kotlin.math.min
 import kotlin.random.Random
 

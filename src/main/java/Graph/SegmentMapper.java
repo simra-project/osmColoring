@@ -83,19 +83,21 @@ public class SegmentMapper {
         logger.debug("number of included incidents: " + numberOfMatchedIncidents);
 
         int numberOfSegmentsWithRides = 0;
+        int segmentIndex = 0;
         for (Map.Entry<String,Segment> stringSegmentEntry : segmentMap.entrySet()) {
             Segment segment = stringSegmentEntry.getValue();
-            if(hasRide(segment)) {
+            if (hasRide(segment)) {
                 numberOfSegmentsWithRides++;
             }
             if (segment instanceof Junction) {
                 Junction junction = (Junction) segment;
-                if (mostDangerousJunctions.size()<3) {
+                if (mostDangerousJunctions.size() < 3) {
                     mostDangerousJunctions.add(junction);
                     mostDangerousJunctions.add(junction);
                     mostDangerousJunctions.add(junction);
                 }
-                junction.dangerousnessScore = ((SCARINESS_FACTOR * junction.numberOfScaryIncidents + junction.numberOfNonScaryIncidents) / junction.numberOfRides);
+                junction.dangerousnessScore = ((SCARINESS_FACTOR * junction.numberOfScaryIncidents + junction.numberOfNonScaryIncidents) /
+                        junction.numberOfRides);
                 for (int j = 0; j < 3; j++) {
                     Junction thisJunction = mostDangerousJunctions.get(j);
                     // System.out.println("junction.dangerousnessScore: " + junction.dangerousnessScore + " thisJunction.dangerousnessScore: " + thisJunction.dangerousnessScore);
@@ -103,7 +105,7 @@ public class SegmentMapper {
                         Junction tempJunction = mostDangerousJunctions.get(j);
                         mostDangerousJunctions.set(j, junction);
                         if (j < 2) {
-                            mostDangerousJunctions.set(j+1, tempJunction);
+                            mostDangerousJunctions.set(j + 1, tempJunction);
                         }
                         break;
                     }
@@ -121,19 +123,23 @@ public class SegmentMapper {
                 */
             } else {
                 Street street = (Street) segment;
-                if (mostDangerousStreetsSouthWest.size()<3) {
+                if (mostDangerousStreetsSouthWest.size() < 3) {
                     mostDangerousStreetsSouthWest.add(street);
                     mostDangerousStreetsSouthWest.add(street);
                     mostDangerousStreetsSouthWest.add(street);
                 }
-                if (mostDangerousStreetsNorthEast.size()<3) {
+                if (mostDangerousStreetsNorthEast.size() < 3) {
                     mostDangerousStreetsNorthEast.add(street);
                     mostDangerousStreetsNorthEast.add(street);
                     mostDangerousStreetsNorthEast.add(street);
                 }
-                street.scoreSouthWest = (((SCARINESS_FACTOR * street.numberOfScaryIncidentsSouthWest + street.numberOfNonScaryIncidentsSouthWest) / street.numberOfRidesSouthWest)/*/street.seg_length)*10000*/);
-                street.scoreNorthEast = (((SCARINESS_FACTOR * street.numberOfScaryIncidentsNorthEast + street.numberOfNonScaryIncidentsNorthEast) / street.numberOfRidesNorthEast)/*/street.seg_length)*10000*/);
-                street.score = (((SCARINESS_FACTOR * (street.numberOfScaryIncidentsSouthWest + street.numberOfScaryIncidentsNorthEast) + (street.numberOfNonScaryIncidentsSouthWest + street.numberOfNonScaryIncidentsNorthEast))/(street.numberOfRidesSouthWest + street.numberOfRidesNorthEast))/*/street.seg_length)*10000*/);
+                street.scoreSouthWest = (((SCARINESS_FACTOR * street.numberOfScaryIncidentsSouthWest + street.numberOfNonScaryIncidentsSouthWest) /
+                        street.numberOfRidesSouthWest)/*/street.seg_length)*10000*/);
+                street.scoreNorthEast = (((SCARINESS_FACTOR * street.numberOfScaryIncidentsNorthEast + street.numberOfNonScaryIncidentsNorthEast) /
+                        street.numberOfRidesNorthEast)/*/street.seg_length)*10000*/);
+                street.score = (((SCARINESS_FACTOR * (street.numberOfScaryIncidentsSouthWest + street.numberOfScaryIncidentsNorthEast) +
+                        (street.numberOfNonScaryIncidentsSouthWest + street.numberOfNonScaryIncidentsNorthEast)) /
+                        (street.numberOfRidesSouthWest + street.numberOfRidesNorthEast))/*/street.seg_length)*10000*/);
                 for (int j = 0; j < 3; j++) {
                     Street thisStreetSouthWest = mostDangerousStreetsSouthWest.get(j);
                     // System.out.println("street.scoreSouthWest: " + street.scoreSouthWest + " thisStreetSouthWest.scoreSouthWest: " + thisStreetSouthWest.scoreSouthWest);
@@ -198,7 +204,16 @@ public class SegmentMapper {
                 */
             }
             // content.append(leafletPolygon(segment.poly_vertices_latsArray,segment.poly_vertices_lonsArray));
-            addSegmentToGeoJson(segment,geoJSONContent);
+            addSegmentToGeoJson(segment, geoJSONContent);
+            if (segmentIndex < segmentMap.size() - 1) {
+                // add comma and line breaks since there will be more segments
+                geoJSONContent.append(",\n\n");
+            } else {
+                // only add line breaks
+                geoJSONContent.append("\n\n");
+                logger.debug("Adding only line breaks for " + segment.id);
+            }
+            segmentIndex++;
         }
         logger.info("Number of Segments: " + segmentMap.size());
         logger.info("Number of Segments with at least 1 ride: " + numberOfSegmentsWithRides);

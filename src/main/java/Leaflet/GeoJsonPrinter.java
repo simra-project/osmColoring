@@ -10,7 +10,7 @@ import java.nio.file.StandardOpenOption;
 public class GeoJsonPrinter {
     long id;
     public static String geoJSONHead() {
-        return "{\"type\":\"FeatureCollection\",\"features\":[";
+        return "{\"type\":\"FeatureCollection\",\"features\":[\n\n";
     }
 
     public String geoJsonPolygon() {
