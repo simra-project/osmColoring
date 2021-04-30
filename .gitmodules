@@ -1,0 +1,3 @@
+[submodule "simra-project.github.io"]
+	path = simra-project.github.io
+	url = https://github.com/simra-project/simra-project.github.io

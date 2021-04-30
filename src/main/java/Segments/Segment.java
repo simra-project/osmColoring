@@ -2,7 +2,7 @@ package Segments;
 
 import Rides.Incident;
 import Rides.Ride;
-import de.hasenburg.geobroker.commons.model.spatial.Geofence;
+import geobroker.Geofence;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

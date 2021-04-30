@@ -6,7 +6,7 @@ import Rides.RideBucket;
 import Segments.Junction;
 import Segments.Segment;
 import Segments.Street;
-import de.hasenburg.geobroker.server.storage.Raster;
+import geobroker.Raster;
 
 import java.io.File;
 import java.util.*;
@@ -15,15 +15,22 @@ import static Config.Config.*;
 import static Leaflet.GeoJsonPrinter.writeGeoJSON;
 import static Leaflet.LeafletPrinter.*;
 import static Rides.Ride.isInBoundingBox;
+import static main.UtilKt.getRidesOfRegionAndUNKNOWN;
+
+import main.CommandLineArguments;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class SegmentMapper {
+
+    private static Logger logger = LogManager.getLogger();
 
     static List<Junction> mostDangerousJunctions = new ArrayList<>();
     static List<Street> mostDangerousStreetsSouthWest = new ArrayList<>();
     static List<Street> mostDangerousStreetsNorthEast = new ArrayList<>();
     static int numberOfRelevantSegments = 0;
 
-    public static void main(String[] args) {
+    public static void doSegmentMapping(CommandLineArguments cla) {
         // Creating the Geobroker Raster. See the documentation of the Geobroker: https://github.com/MoeweX/geobroker
         Raster raster = new Raster(1000);
 
@@ -37,7 +44,7 @@ public class SegmentMapper {
         List <Junction> junctionList = new ArrayList<>();
 
         // Contains the ride files of specified region.
-        File[] rideFolder = getRidesOfRegion(REGION);
+        List<File> rideFolder = getRidesOfRegionAndUNKNOWN(cla.getSimraRoot(), cla.getRegion());
         StringBuilder content = new StringBuilder();
         int numberOfUnmatchedRideBuckets = 0;
         int numberOfAllRides = 0;
@@ -47,8 +54,8 @@ public class SegmentMapper {
         List<Incident> unmatchedIncidents = new ArrayList<>();
         StringBuilder mapContent = new StringBuilder();
         StringBuilder geoJSONContent = new StringBuilder();
-        for (int i = 0; i < rideFolder.length; i++) {
-            Ride ride = new Ride(rideFolder[i].getPath(),segmentMap,raster);
+        for (int i = 0; i < rideFolder.size(); i++) {
+            Ride ride = new Ride(rideFolder.get(i).getPath(),segmentMap,raster);
             if ( ride.rideBuckets.size() > 0 && isInBoundingBox(ride.rideBuckets.get(0).lat,ride.rideBuckets.get(0).lon,BBOX_LATS,BBOX_LONS)) {
                 numberOfIncludedRides++;
                 numberOfMatchedIncidents += ride.numberOfMatchedIncidents;
@@ -69,26 +76,28 @@ public class SegmentMapper {
             content.append(leafletMarker(thisIncident.lat,thisIncident.lon,thisIncident.rideName,thisIncident.timestamp));
         }
 
-        System.out.println("number of unmatched ride buckets: " + numberOfUnmatchedRideBuckets);
-        System.out.println("number of all rides: " + numberOfAllRides);
-        System.out.println("number of included rides: " + numberOfIncludedRides);
-        System.out.println("number of all incidents: " + (numberOfMatchedIncidents + unmatchedIncidents.size()));
-        System.out.println("number of included incidents: " + numberOfMatchedIncidents);
+        logger.debug("number of unmatched ride buckets: " + numberOfUnmatchedRideBuckets);
+        logger.debug("number of all rides: " + numberOfAllRides);
+        logger.debug("number of included rides: " + numberOfIncludedRides);
+        logger.debug("number of all incidents: " + (numberOfMatchedIncidents + unmatchedIncidents.size()));
+        logger.debug("number of included incidents: " + numberOfMatchedIncidents);
 
         int numberOfSegmentsWithRides = 0;
+        int segmentIndex = 0;
         for (Map.Entry<String,Segment> stringSegmentEntry : segmentMap.entrySet()) {
             Segment segment = stringSegmentEntry.getValue();
-            if(hasRide(segment)) {
+            if (hasRide(segment)) {
                 numberOfSegmentsWithRides++;
             }
             if (segment instanceof Junction) {
                 Junction junction = (Junction) segment;
-                if (mostDangerousJunctions.size()<3) {
+                if (mostDangerousJunctions.size() < 3) {
                     mostDangerousJunctions.add(junction);
                     mostDangerousJunctions.add(junction);
                     mostDangerousJunctions.add(junction);
                 }
-                junction.dangerousnessScore = ((SCARINESS_FACTOR * junction.numberOfScaryIncidents + junction.numberOfNonScaryIncidents) / junction.numberOfRides);
+                junction.dangerousnessScore = ((SCARINESS_FACTOR * junction.numberOfScaryIncidents + junction.numberOfNonScaryIncidents) /
+                        junction.numberOfRides);
                 for (int j = 0; j < 3; j++) {
                     Junction thisJunction = mostDangerousJunctions.get(j);
                     // System.out.println("junction.dangerousnessScore: " + junction.dangerousnessScore + " thisJunction.dangerousnessScore: " + thisJunction.dangerousnessScore);
@@ -96,7 +105,7 @@ public class SegmentMapper {
                         Junction tempJunction = mostDangerousJunctions.get(j);
                         mostDangerousJunctions.set(j, junction);
                         if (j < 2) {
-                            mostDangerousJunctions.set(j+1, tempJunction);
+                            mostDangerousJunctions.set(j + 1, tempJunction);
                         }
                         break;
                     }
@@ -114,19 +123,23 @@ public class SegmentMapper {
                 */
             } else {
                 Street street = (Street) segment;
-                if (mostDangerousStreetsSouthWest.size()<3) {
+                if (mostDangerousStreetsSouthWest.size() < 3) {
                     mostDangerousStreetsSouthWest.add(street);
                     mostDangerousStreetsSouthWest.add(street);
                     mostDangerousStreetsSouthWest.add(street);
                 }
-                if (mostDangerousStreetsNorthEast.size()<3) {
+                if (mostDangerousStreetsNorthEast.size() < 3) {
                     mostDangerousStreetsNorthEast.add(street);
                     mostDangerousStreetsNorthEast.add(street);
                     mostDangerousStreetsNorthEast.add(street);
                 }
-                street.scoreSouthWest = (((SCARINESS_FACTOR * street.numberOfScaryIncidentsSouthWest + street.numberOfNonScaryIncidentsSouthWest) / street.numberOfRidesSouthWest)/*/street.seg_length)*10000*/);
-                street.scoreNorthEast = (((SCARINESS_FACTOR * street.numberOfScaryIncidentsNorthEast + street.numberOfNonScaryIncidentsNorthEast) / street.numberOfRidesNorthEast)/*/street.seg_length)*10000*/);
-                street.score = (((SCARINESS_FACTOR * (street.numberOfScaryIncidentsSouthWest + street.numberOfScaryIncidentsNorthEast) + (street.numberOfNonScaryIncidentsSouthWest + street.numberOfNonScaryIncidentsNorthEast))/(street.numberOfRidesSouthWest + street.numberOfRidesNorthEast))/*/street.seg_length)*10000*/);
+                street.scoreSouthWest = (((SCARINESS_FACTOR * street.numberOfScaryIncidentsSouthWest + street.numberOfNonScaryIncidentsSouthWest) /
+                        street.numberOfRidesSouthWest)/*/street.seg_length)*10000*/);
+                street.scoreNorthEast = (((SCARINESS_FACTOR * street.numberOfScaryIncidentsNorthEast + street.numberOfNonScaryIncidentsNorthEast) /
+                        street.numberOfRidesNorthEast)/*/street.seg_length)*10000*/);
+                street.score = (((SCARINESS_FACTOR * (street.numberOfScaryIncidentsSouthWest + street.numberOfScaryIncidentsNorthEast) +
+                        (street.numberOfNonScaryIncidentsSouthWest + street.numberOfNonScaryIncidentsNorthEast)) /
+                        (street.numberOfRidesSouthWest + street.numberOfRidesNorthEast))/*/street.seg_length)*10000*/);
                 for (int j = 0; j < 3; j++) {
                     Street thisStreetSouthWest = mostDangerousStreetsSouthWest.get(j);
                     // System.out.println("street.scoreSouthWest: " + street.scoreSouthWest + " thisStreetSouthWest.scoreSouthWest: " + thisStreetSouthWest.scoreSouthWest);
@@ -191,11 +204,19 @@ public class SegmentMapper {
                 */
             }
             // content.append(leafletPolygon(segment.poly_vertices_latsArray,segment.poly_vertices_lonsArray));
-            addSegmentToGeoJson(segment,geoJSONContent);
+            addSegmentToGeoJson(segment, geoJSONContent);
+            if (segmentIndex < segmentMap.size() - 1) {
+                // add comma and line breaks since there will be more segments
+                geoJSONContent.append(",\n\n");
+            } else {
+                // only add line breaks
+                geoJSONContent.append("\n\n");
+            }
+            segmentIndex++;
         }
-        System.out.println("Number of Segments: " + segmentMap.size());
-        System.out.println("Number of Segments with at least 1 ride: " + numberOfSegmentsWithRides);
-        System.out.println("Number of relevant segments: " + numberOfRelevantSegments);
+        logger.info("Number of Segments: " + segmentMap.size());
+        logger.info("Number of Segments with at least 1 ride: " + numberOfSegmentsWithRides);
+        logger.info("Number of relevant segments: " + numberOfRelevantSegments);
         // writeLeafletHTML(content.toString(), DEBUG_PATH + "\\unmatchedIncidents.html",REGIONCENTERCOORDS);
         /*
         junctionList.sort(Collections.reverseOrder());
@@ -288,19 +309,6 @@ public class SegmentMapper {
                 numberOfRelevantSegments++;
             }
         }
-    }
-
-    // gets a list of ride files from the specified region folder
-    private static File[] getRidesOfRegion(String region) {
-        File[] regionFolder = new File(PATH + region + "\\Rides").listFiles();
-        File[] unknownFolder = new File(PATH + "UNKNOWN\\Rides").listFiles();
-        File[] rideFiles = Arrays.copyOf(regionFolder, regionFolder.length + unknownFolder.length);
-        System.arraycopy(unknownFolder, 0, rideFiles, regionFolder.length, unknownFolder.length);
-        if (rideFiles == null) {
-            System.err.println("folder at " + PATH + region + "\\Rides is empty");
-            System.exit(-1);
-        }
-        return rideFiles;
     }
 
     public static boolean isRelevant(Segment segment) {

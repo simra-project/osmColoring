@@ -3,7 +3,7 @@ package Rides;
 import Segments.Junction;
 import Segments.Segment;
 import Segments.Street;
-import de.hasenburg.geobroker.server.storage.Raster;
+import geobroker.Raster;
 
 import java.awt.geom.Path2D;
 import java.io.*;
