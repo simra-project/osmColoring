@@ -178,44 +178,11 @@ class Raster(val granularity: Int) {
             lat += degreeStep
         }
 
-//        // if geofence is a rectangle, we can collect the indices
-//        // doing the isRectangle check is too expensive with spatial4j to be worth it
-//        if (geofence.isRectangle) {
-//            return rasterEntriesToCheckForIntersection
-//        }
-
         // remove raster entries whose box is disjoint with the actual geofence
         rasterEntriesToCheckForIntersection.removeIf { re -> re.rasterEntryBox.disjoint(geofence) }
 
         // return
         return rasterEntriesToCheckForIntersection
     }
-
-    /*****************************************************************
-     * No Geo-Context (used to calculate Overhead)
-     *
-     * In order to use the storage without geo-context information,
-     * the two private methods above need to be commented out.
-     *
-     * Note: the below is still Java code
-     ****************************************************************/
-
-//    	private final Location index = new Location(0.0, 0.0);
-//
-//    	private Location calculateIndexLocation(Location location) {
-//    		return index;
-//    	}
-//
-//    	/**
-//    	 * Calculates with which {@link RasterEntry} the given geofence intersects with.
-//    	 *
-//    	 * @param geofence - the geofence
-//    	 * @return - a list of {@link RasterEntry}s
-//    	 */
-//    	private List<RasterEntry> calculateIndexLocations(Geofence geofence) {
-//    		List<RasterEntry> list = new ArrayList<>();
-//    		list.add(rasterEntries.computeIfAbsent(index, k -> new RasterEntry(index, degreeStep))); // only one entry
-//    		return list;
-//    	}
 
 }

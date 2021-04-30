@@ -211,7 +211,6 @@ public class SegmentMapper {
             } else {
                 // only add line breaks
                 geoJSONContent.append("\n\n");
-                logger.debug("Adding only line breaks for " + segment.id);
             }
             segmentIndex++;
         }
