@@ -144,12 +144,12 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>MultiFile Client</id>
+                        <id>SimRa MapJson</id>
                         <configuration>
                             <appendAssemblyId>false</appendAssemblyId>
                             <archive>
                                 <manifest>
-                                    <mainClass>de.hasenburg.geobroker.client.main.MultiFileClientKt</mainClass>
+                                    <mainClass>main.MainKt</mainClass>
                                 </manifest>
                                 <manifestEntries>
                                     <Multi-Release>true</Multi-Release>
@@ -158,7 +158,7 @@
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
-                            <finalName>MultiFileClient</finalName>
+                            <finalName>SimRa-MapJson</finalName>
                         </configuration>
                         <phase>package</phase>
                         <goals>

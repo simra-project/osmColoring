@@ -1,3 +1,5 @@
+package main
+
 import Graph.SegmentMapper.doSegmentMapping
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.mainBody
