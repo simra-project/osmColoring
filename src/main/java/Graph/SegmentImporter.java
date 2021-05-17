@@ -27,7 +27,6 @@ public class SegmentImporter {
             // Skip header id|lat|lon|highwayName|highwaytypes|highwaylanes|poly_vertices_lats|poly_vertices_lons
             String line = br.readLine();
             while ((line = br.readLine()) != null) {
-                //String[] junctionLineArray = splitButIgnoreQuotes(line);
                 String[] junctionLineArray = line.split("\\|",-1);
                 String id = junctionLineArray[0].split(" ,")[0] + ".0";
                 String[] latsAsStrings = junctionLineArray[1].split(", ");
@@ -139,15 +138,7 @@ public class SegmentImporter {
                         .replace("[","")
                         .replace("]","")
                         .split(", ");
-                /*
-                Integer[] segment_nodesArray = new Integer[segment_nodesStrings.length];
-                for (int i = 0; i < segment_nodesArray.length; i++) {
-                    if (segment_nodesStrings[i].length() < 3) {
-                        continue;
-                    }
-                    segment_nodesArray[i] = Integer.valueOf(segment_nodesStrings[i].substring(2));
-                }
-                */
+
                 double seg_length = Double.valueOf(streetsLineArray[6]);
                 String[] poly_vertices_latsStrings = streetsLineArray[7]
                         .replace("[","")

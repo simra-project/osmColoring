@@ -31,21 +31,6 @@ public class Incident {
         this.rideName = rideName;
     }
 
-    public String toGeoJson() {
-        StringBuilder result = new StringBuilder();
-        result.append("{\"type\":\"Feature\",")
-                .append("\"properties\":{\"type\":\"Incident\",")
-                .append("\"incident\":\"").append(getIncidentName()).append("\",");
-        if(description.length()>0) {
-            result.append("\"description\":\"").append(description.replace("\"","").replace(";komma;",",")).append("\",");
-        }
-
-        result.append("\"scary\":\"").append(scary).append("\",")
-                .append("\"participants\":\"").append(getParticipants())
-                .append("\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[").append(lon).append(",").append(lat).append("]}}\n,");
-        return result.toString();
-    }
-
     public String getParticipants() {
         boolean[] participantBooleans = {i1,i2,i3,i4,i5,i6,i7,i8,i10,i9};
         // String[] participantStrings = {"Bus/Coach","Cyclist","Pedestrian","Delivery Van","Lorry/Truck","Motorcyclist","Car","Taxi/Cab","Electric Scooter","Other"};

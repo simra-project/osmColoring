@@ -50,12 +50,7 @@ public class RideBucket {
         Location location = new Location(lat, lon);
         // contains all segments that are near the RideBucket
         List<ImmutablePair<String, String>> segmentCandidates = raster.getSubscriptionIdsInRasterEntryForPublisherLocation(location);
-        /*
-        if (segmentCandidates.size() == 0) {
-            matchedToSegment = false;
-        }
-         */
-        StringBuilder debug = new StringBuilder();
+
         // loop through all segment candidates and find the segment in which the RideBucket lies
         // Junction beats Street if RideBucket lies in both
         for (int i = 0; i < segmentCandidates.size(); i++) {
@@ -77,36 +72,11 @@ public class RideBucket {
 
                 }
             }
-            //debug.append(leafletPolygon(actualSegment.poly_vertices_latsArray, actualSegment.poly_vertices_lonsArray, "distance: " + distance))
-            //        .append(leafletMarker(lat, lon, rideName, timestamp, "distanceToNearestJunction: " + distanceToNearestJunction + "<br>distanceToNearestStreet: " + distanceToNearestStreet + "<br> MATCH_THRESHOLD: " + MATCH_THRESHOLD));
-
-            /*
-            if (timestamp == 1565680041553L) {
-                System.out.println("distance: " + distance + " MATCH_THRESHOLD: " + MATCH_THRESHOLD);
-                System.out.println("distance < MATCH_THRESHOLD: " + (distance < MATCH_THRESHOLD));
-                debug.append(leafletPolygon(polyLats, polyLons, "distance: " + distance))
-                        .append(leafletMarker(lat, lon, path, timestamp, "distanceToNearestJunction: " + distanceToNearestJunction + "<br>distanceToNearestStreet: " + distanceToNearestStreet + "<br> MATCH_THRESHOLD: " + MATCH_THRESHOLD));
-            }
-            */
         }
 
         if (nearestJunction == null && nearestStreet == null && segmentCandidates.size() > 0) {
             matchedToSegment = false;
-            // debugSegments(segmentCandidates,segmentMap,path,distanceToNearestJunction,distanceToNearestStreet);
         }
-        /*
-        if (!matchedToSegment) {
-            String path = PATH + "//Debug//" + rideName + "_" + timestamp + ".html";
-            writeLeafletHTML(debug.toString(), path, lat + "," + lon);
-            try {
-                System.out.println("opening " + path);
-                Desktop.getDesktop().browse(new File(path).toURI());
-                System.in.read();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        */
         // return nearest segment
         if (distanceToNearestJunction <= distanceToNearestStreet) {
             return nearestJunction;
@@ -126,48 +96,5 @@ public class RideBucket {
         Point point = new GeometryFactory().createPoint(new Coordinate(lat, lon));
         DistanceOp distanceOp = new DistanceOp(polygon, point);
         return distanceOp.distance();
-    }
-
-
-    private void debugSegments(List<ImmutablePair<String, String>> segmentsContainingRideBucket, HashMap<String, Segment> segmentMap, String path, double distanceToNearestJunction, double distanceToNearestStreet) {
-
-        StringBuilder debugString = new StringBuilder();
-        debugString.append(leafletHead(lat + "," + lon));
-        debugString.append("\t\tL.marker([")
-                .append(lat).append(",").append(lon).append("]).addTo(map)")
-                .append(".bindPopup(\"")
-                .append(" distanceToNearestJunction: ")
-                .append(distanceToNearestJunction)
-                .append(" distanceToNearestStreet: ")
-                .append(distanceToNearestStreet)
-                .append("\");\n");
-            for (int i = 0; i < segmentsContainingRideBucket.size(); i++) {
-            Segment segment = segmentMap.get(segmentsContainingRideBucket.get(i).getRight());
-            double[] polyLats = segment.poly_vertices_latsArray;
-            double[] polyLons = segment.poly_vertices_lonsArray;
-            Coordinate[] polygonCoordinates = new Coordinate[polyLats.length];
-            debugString.append("\t\tL.polygon([\n");
-            for (int j = 0; j < polyLats.length; j++) {
-                polygonCoordinates[j] = new Coordinate(polyLats[j],polyLons[j]);
-                debugString.append("\t\t\t[")
-                        .append(polyLats[j]).append(",")
-                        .append(polyLons[j]).append("],\n");
-            }
-                debugString.append("\t\t]).addTo(map)")
-                        .append(".bindPopup(\"")
-                        .append(segment.id)
-                        .append("\");\n");
-
-            }
-        debugString.append("    </script>\n" +
-                "</body>\n" +
-                "</html>");
-        try {
-            // System.out.println("writing to: " + DEBUG_PATH + "\\" + path + "_" + timestamp + ".html");
-            Files.write(Paths.get(DEBUG_PATH + "\\" + path + "_" + timestamp + ".html"), debugString.toString().getBytes(),StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 }

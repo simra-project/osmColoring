@@ -24,8 +24,6 @@ public class Street extends Segment implements Comparable<Street> {
         this.lanes = highwayLanes;
         this.lanes_backward = highwayLanes_backward;
         this.segment_nodes = segment_nodes;
-        //this.partOfStreetWithId = segment_nr.split("\\.")[0];
-        //this.numberOfSegmentOfStreet = Integer.valueOf(segment_nr.split("\\.")[1]);
         this.seg_length = seg_length;
         this.poly_vertices_latsArray = poly_vertices_latsArray;
         this.poly_vertices_lonsArray = poly_vertices_lonsArray;
@@ -102,54 +100,4 @@ public class Street extends Segment implements Comparable<Street> {
 
         return result.toString();
     }
-
-    public String toLeaflet(boolean debugOnMap) {
-        StringBuilder result = new StringBuilder();
-        result.append("\t\tL.polygon([\n");
-        for (int i = 0; i < poly_vertices_latsArray.length; i++) {
-            result.append("\t\t\t[")
-                    .append(poly_vertices_latsArray[i]).append(",")
-                    .append(poly_vertices_lonsArray[i]).append("],\n");
-        }
-        String color = IRRELEVANT_COLOR;
-        if (numberOfRidesSouthWest + numberOfRidesNorthEast >= RELEVANCE_THRESHOLD_RIDECOUNT) {
-            color = determineColor().split(",")[0];
-        }
-        result.append("\t\t],{fillOpacity:").append(determineColor().split(",")[1])
-                .append(",color:'").append(color)
-                .append("', weight:")
-                .append(determineColor().split(",")[2]).append("}).addTo(map)")
-                .append(".bindPopup(\"Street")
-                .append("<br>score: ").append(getScore())
-                .append("<br>incidents: ").append((numberOfNonScaryIncidentsNorthEast + numberOfNonScaryIncidentsSouthWest + numberOfScaryIncidentsNorthEast + numberOfScaryIncidentsSouthWest))
-                .append("<br>rides: ").append((numberOfRidesSouthWest + numberOfRidesNorthEast))
-                .append("<br>length: ").append(seg_length);
-        if (debugOnMap) {
-            result.append("<br>id: ").append(id)
-                    .append("<br>highwaynames: ").append(highwayName)
-                    .append("<br>highwaytypes: ").append(Arrays.toString(highWayTypes));
-        }
-        result.append("<br>rides south west: ").append(numberOfRidesSouthWest)
-                .append("<br>incidents south west: ").append((numberOfNonScaryIncidentsSouthWest + numberOfScaryIncidentsSouthWest))
-                .append("<br>score south west: ").append(scoreSouthWest)
-                .append("<br>rides north east: ").append(numberOfRidesNorthEast)
-                .append("<br>incidents north east: ").append((numberOfNonScaryIncidentsNorthEast + numberOfScaryIncidentsNorthEast))
-                .append("<br>score north east: ").append(scoreNorthEast)
-                .append("<br>----------incident types----------")
-                .append("<br>close pass: ").append((scaryIncidentTypesSouthWest[1] + nonScaryIncidentTypesSouthWest[1] + scaryIncidentTypesNorthEast[1] + nonScaryIncidentTypesNorthEast[1]))
-                .append("<br>someone pulling in or out: ").append((scaryIncidentTypesSouthWest[2] + nonScaryIncidentTypesSouthWest[2] + scaryIncidentTypesNorthEast[2] + nonScaryIncidentTypesNorthEast[2]))
-                .append("<br>near left or right hook: ").append((scaryIncidentTypesSouthWest[3] + nonScaryIncidentTypesSouthWest[3] + scaryIncidentTypesNorthEast[3] + nonScaryIncidentTypesNorthEast[3]))
-                .append("<br>someone approaching head on: ").append((scaryIncidentTypesSouthWest[4] + nonScaryIncidentTypesSouthWest[4] + scaryIncidentTypesNorthEast[4] + nonScaryIncidentTypesNorthEast[4]))
-                .append("<br>tailgating: ").append((scaryIncidentTypesSouthWest[5] + nonScaryIncidentTypesSouthWest[5] + scaryIncidentTypesNorthEast[5] + nonScaryIncidentTypesNorthEast[5]))
-                .append("<br>near-dooring: ").append((scaryIncidentTypesSouthWest[6] + nonScaryIncidentTypesSouthWest[6] + scaryIncidentTypesNorthEast[6] + nonScaryIncidentTypesNorthEast[6]))
-                .append("<br>dodging an obstacle: ").append((scaryIncidentTypesSouthWest[7] + nonScaryIncidentTypesSouthWest[7] + scaryIncidentTypesNorthEast[7] + nonScaryIncidentTypesNorthEast[7]))
-                .append("<br>other: ").append((scaryIncidentTypesSouthWest[8] + nonScaryIncidentTypesSouthWest[8] + scaryIncidentTypesNorthEast[8] + nonScaryIncidentTypesNorthEast[8]))
-                .append("\");\n");
-        return result.toString();
-    }
-
-    private String determineColor() {
-        return super.determineColor(score);
-    }
-
 }

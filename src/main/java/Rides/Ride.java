@@ -32,10 +32,8 @@ public class Ride {
             // System.out.println(pathToRide.split("\\\\")[7]);
             // Skip file info 57#2
             br.readLine();
-            // System.out.println("file info: " + line);
             // Skip header key,lat,lon,ts,bike,childCheckBox,trailerCheckBox,pLoc,incident,i1,i2,i3,i4,i5,i6,i7,i8,i9,scary,desc,i10
             br.readLine();
-            // System.out.println("header: " + line);
             boolean incidentPart = true;
             RideBucket lastRideBucket = null;
             RideBucket thisRideBucket = null;
@@ -53,7 +51,6 @@ public class Ride {
                 }
                 // add incident
                 if (incidentPart) {
-                    // System.out.println("incident line: " + line);
                     String[] lineArray = line.split(",", -1);
                     // skip incident if it is "nothing" or corrupted
                     if (line.endsWith(",,,,,") || line.length()<6 || lineArray[8].equals("0")||lineArray[8].equals("") || lineArray[8].equals("-5")) {
@@ -68,7 +65,6 @@ public class Ride {
                 } else if (!incidentPart) {
                     // skip line if it does not have GPS, or is a header
                     if (!line.startsWith(",,") && !line.contains("#")  && !line.startsWith("lat")) {
-                        //System.out.println("ride line: " + line);
                         String[] lineArray = line.split(",",-1);
                         List<Segment> visitedSegments = new ArrayList<>();
                         thisRideBucket = new RideBucket(Double.valueOf(lineArray[0]),Double.valueOf(lineArray[1]),Long.valueOf(lineArray[5]),segmentMap,raster, (ArrayList<Segment>) visitedSegments, pathToRide, this);
@@ -79,10 +75,8 @@ public class Ride {
 
                         // skip this RideBucket, if it wasn't matched to a segment
                         if (thisRideBucket.segment == null) {
-                            //System.out.println("lat,lon: " + thisRideBucket.lat + "," + thisRideBucket.lon);
                             continue;
                         }
-                        // System.out.println("id: " + thisRideBucket.segment.id + " isJunction: " + thisRideBucket.segment.isJunction);
                         // if we are still in the first segment or same segment as before...
                         if (lastRideBucket == null || lastRideBucket.segment == thisRideBucket.segment) {
                             rideBucketsOfOneSegment.add(thisRideBucket);
@@ -197,8 +191,7 @@ public class Ride {
             path.lineTo(polygonLats[i], polygonLons[i]);
         }
         path.lineTo(polygonLats[0], polygonLons[0]);
-        //path.closePath();
-        return /*true;//*/path.contains(lat,lon);
+        return path.contains(lat,lon);
 
     }
 
