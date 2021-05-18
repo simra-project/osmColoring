@@ -24,7 +24,6 @@ public class Config {
     public static final String JUNCTIONS_PATH = "osm_data/leipzig_junctions.csv";
     public static final String SEGMENTS_PATH = "osm_data/leipzig_streets.csv";
 
-    public static final String HTML_OUTPUT_PATH = "output_data/leipzig.html";
     public static final String GEOJSON_OUTPUT_PATH = "output_data/leipzig.json";
 
     public static final String DEBUG_PATH = "output_data/debug";
