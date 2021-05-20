@@ -4,7 +4,7 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%highlight{%d{HH:mm:ss.SSS} [%-15t] %-5level %-30c{2} - %msg%n}"/>
         </Console>
-        <File name="File" fileName="logs/mapjson.log" append="true">
+        <File name="File" fileName="logs/osmColoring.log" append="true">
             <PatternLayout pattern="%highlight{%d{HH:mm:ss.SSS} [%-15t] %-5level %-30c{2} - %msg%n}"/>
         </File>
     </Appenders>
