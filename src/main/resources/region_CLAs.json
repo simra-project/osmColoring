@@ -1,120 +1,120 @@
 {
-    "berlin": {
+    "Berlin": {
         "minRides": 50,
         "minScore": 0.25,
         "minScoreRides": 10
     },
-    "stuttgart": {
+    "Stuttgart": {
         "minRides": 20,
         "minScore": 0.25,
         "minScoreRides": 5
     },
-    "nürnberg": {
+    "Nuernberg": {
         "minRides": 20,
         "minScore": 0.25,
         "minScoreRides": 5
     },
-    "konstanz": {
+    "Konstanz": {
         "minRides": 20,
         "minScore": 0.25,
         "minScoreRides": 5
     },
-    "karlsruhe": {
+    "Karlsruhe": {
         "minRides": 15,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "mannheim": {
+    "Mannheim": {
         "minRides": 15,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "freiburg": {
+    "Freiburg": {
         "minRides": 15,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "tübingen": {
+    "Tübingen": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "mainz": {
+    "Mainz": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "rastatt": {
+    "Rastatt": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "kaiserslautern": {
+    "Kaiserslautern": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "saarlouis": {
+    "Saarlouis": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "landau": {
+    "Landau": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "frankfurt": {
+    "Frankfurt": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "bruchsal": {
+    "Bruchsal": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "breisgau": {
+    "Breisgau-Hochschwarzwald": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "alzey": {
+    "Alzey": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "koblenz": {
+    "Koblenz": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "odenwaldkreis": {
+    "Odenwald": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "ortenaukreis": {
+    "Ortenau": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "vulkaneifel": {
+    "Vulkaneifel": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "wetteraukreis": {
+    "Wetterau": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "trier": {
+    "Trier": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
     },
-    "tuttlingen": {
+    "Tuttlingen": {
         "minRides": 10,
         "minScore": 0.25,
         "minScoreRides": 3
