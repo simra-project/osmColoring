@@ -3,7 +3,12 @@ package main
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.InvalidArgumentException
 import com.xenomachina.argparser.default
+import org.apache.logging.log4j.LogManager
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
+
+private val logger = LogManager.getLogger()
 
 class CommandLineArguments(parser: ArgParser) {
 
@@ -89,13 +94,38 @@ class CommandLineArguments(parser: ArgParser) {
         require(osmMetaFile.exists()) { "${osmMetaFile.absolutePath} does not exist" }
     }
 
-    override fun toString(): String {
-        return "CommandLineArguments(simraRoot=$simraRoot, region='$region', outputDir='$outputDir', osmDataDir='$osmDataDir', scarinessFactor=$scarinessFactor, relevance_threshold_ride_count=$relevanceThresholdRideCount, relevance_threshold_score=$relevanceThresholdScore, relevance_threshold_score_ride_count=$relevanceThresholdScoreRideCount, ignore_irrelevant_segments=$ignoreIrrelevantSegments, jsonOutputFile=$jsonOutputFile, osmJunctionFile=$osmJunctionFile, osmSegmentsFile=$osmSegmentsFile, osmMetaFile=$osmMetaFile)"
+    val BBOX_LATS = computeBoundingBox(osmMetaFile).first
+    val BBOX_LONS = computeBoundingBox(osmMetaFile).second
+
+    fun computeBoundingBox(osmMetaFile: File): Pair<Array<Double>, Array<Double>> {
+        val jsonO = JSONObject(osmMetaFile.readLines().joinToString(""))
+
+        // lon lat (south west) lon lat (north east)
+        val points = jsonO["bounding_box"] as JSONArray
+
+        val south = points[1].toString().toDouble()
+        val north = points[3].toString().toDouble()
+        val west = points[0].toString().toDouble()
+        val east = points[2].toString().toDouble()
+
+        // needed as south-west,south-east,north-east,north-west
+        // -> lats = south south north north
+        // -> lons = west east east west
+        val BBOX_LATS = listOf(south, south, north, north).toTypedArray()
+        val BBOX_LONS = listOf(west, east, east, west).toTypedArray()
+
+        logger.debug("BBOX_LATS: $BBOX_LATS")
+        logger.debug("BBOX_LONS: $BBOX_LONS")
+
+        return Pair(BBOX_LATS, BBOX_LONS)
     }
 
     /*****************************************************************
      * Generated methods
      ****************************************************************/
 
+    override fun toString(): String {
+        return "CommandLineArguments(simraRoot=$simraRoot, region='$region', outputDir='$outputDir', osmDataDir='$osmDataDir', scarinessFactor=$scarinessFactor, relevance_threshold_ride_count=$relevanceThresholdRideCount, relevance_threshold_score=$relevanceThresholdScore, relevance_threshold_score_ride_count=$relevanceThresholdScoreRideCount, ignore_irrelevant_segments=$ignoreIrrelevantSegments, jsonOutputFile=$jsonOutputFile, osmJunctionFile=$osmJunctionFile, osmSegmentsFile=$osmSegmentsFile, osmMetaFile=$osmMetaFile)"
+    }
 
 }

@@ -11,9 +11,8 @@ import geobroker.Raster;
 import java.io.File;
 import java.util.*;
 
-import static Config.Config.*;
 import static Leaflet.GeoJsonPrinter.writeGeoJSON;
-import static Leaflet.LeafletPrinter.*;
+import static Leaflet.LeafletPrinter.leafletMarker;
 import static Rides.Ride.isInBoundingBox;
 import static main.UtilKt.getRidesOfRegionAndUNKNOWN;
 
@@ -55,8 +54,8 @@ public class SegmentMapper {
         StringBuilder mapContent = new StringBuilder();
         StringBuilder geoJSONContent = new StringBuilder();
         for (int i = 0; i < rideFolder.size(); i++) {
-            Ride ride = new Ride(rideFolder.get(i).getPath(),segmentMap,raster);
-            if ( ride.rideBuckets.size() > 0 && isInBoundingBox(ride.rideBuckets.get(0).lat,ride.rideBuckets.get(0).lon,BBOX_LATS,BBOX_LONS)) {
+            Ride ride = new Ride(rideFolder.get(i).getPath(),segmentMap,raster, cla);
+            if ( ride.rideBuckets.size() > 0 && isInBoundingBox(ride.rideBuckets.get(0).lat,ride.rideBuckets.get(0).lon,cla.getBBOX_LATS(),cla.getBBOX_LONS())) {
                 numberOfIncludedRides++;
                 numberOfMatchedIncidents += ride.numberOfMatchedIncidents;
                 unmatchedIncidents.addAll(ride.unmatchedIncidents);
