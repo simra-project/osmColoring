@@ -36,7 +36,7 @@ public class SegmentMapper {
 
         // Contains the Junctions and Street Segments, including their statistics and dangerousness score
         // as value and their Id(s) as their key.
-        HashMap<String, Segment> segmentMap = SegmentImporter.importSegments(raster);
+        HashMap<String, Segment> segmentMap = SegmentImporter.importSegments(raster, cla);
 
         // These Lists contain junctions and steet segments only. Their purpose is to sort them according to their
         // dangerousness score.
@@ -91,7 +91,7 @@ public class SegmentMapper {
                     mostDangerousJunctions.add(junction);
                     mostDangerousJunctions.add(junction);
                 }
-                junction.dangerousnessScore = ((SCARINESS_FACTOR * junction.numberOfScaryIncidents + junction.numberOfNonScaryIncidents) /
+                junction.dangerousnessScore = ((cla.getScarinessFactor() * junction.numberOfScaryIncidents + junction.numberOfNonScaryIncidents) /
                         junction.numberOfRides);
                 for (int j = 0; j < 3; j++) {
                     Junction thisJunction = mostDangerousJunctions.get(j);
@@ -118,11 +118,11 @@ public class SegmentMapper {
                     mostDangerousStreetsNorthEast.add(street);
                     mostDangerousStreetsNorthEast.add(street);
                 }
-                street.scoreSouthWest = (((SCARINESS_FACTOR * street.numberOfScaryIncidentsSouthWest + street.numberOfNonScaryIncidentsSouthWest) /
+                street.scoreSouthWest = (((cla.getScarinessFactor() * street.numberOfScaryIncidentsSouthWest + street.numberOfNonScaryIncidentsSouthWest) /
                         street.numberOfRidesSouthWest)/*/street.seg_length)*10000*/);
-                street.scoreNorthEast = (((SCARINESS_FACTOR * street.numberOfScaryIncidentsNorthEast + street.numberOfNonScaryIncidentsNorthEast) /
+                street.scoreNorthEast = (((cla.getScarinessFactor() * street.numberOfScaryIncidentsNorthEast + street.numberOfNonScaryIncidentsNorthEast) /
                         street.numberOfRidesNorthEast)/*/street.seg_length)*10000*/);
-                street.score = (((SCARINESS_FACTOR * (street.numberOfScaryIncidentsSouthWest + street.numberOfScaryIncidentsNorthEast) +
+                street.score = (((cla.getScarinessFactor() * (street.numberOfScaryIncidentsSouthWest + street.numberOfScaryIncidentsNorthEast) +
                         (street.numberOfNonScaryIncidentsSouthWest + street.numberOfNonScaryIncidentsNorthEast)) /
                         (street.numberOfRidesSouthWest + street.numberOfRidesNorthEast))/*/street.seg_length)*10000*/);
                 for (int j = 0; j < 3; j++) {
@@ -149,7 +149,7 @@ public class SegmentMapper {
                 }
                 streetList.add(street);
             }
-            added = addSegmentToGeoJson(segment, geoJSONContent);
+            added = addSegmentToGeoJson(segment, geoJSONContent, cla);
             if (added && segmentIndex < segmentMap.size() - 1) {
                 // add comma and line breaks since there will be more segments
                 geoJSONContent.append(",\n\n");
@@ -168,7 +168,7 @@ public class SegmentMapper {
         logger.info("Number of Segments: " + segmentMap.size());
         logger.info("Number of Segments with at least 1 ride: " + numberOfSegmentsWithRides);
         logger.info("Number of relevant segments: " + numberOfRelevantSegments);
-        writeGeoJSON(geoJSONContent.toString(), GEOJSON_OUTPUT_PATH);
+        writeGeoJSON(geoJSONContent.toString(), cla.getJsonOutputFile());
     }
 
     private static boolean hasRide(Segment segment) {
@@ -178,13 +178,14 @@ public class SegmentMapper {
     /**
      * Returns true, if a segment was added, and false otherwise (e.g., because it was not relevant).
      */
-    private static boolean addSegmentToGeoJson(Segment segment, StringBuilder geoJSONContent) {
-        if (SHOW_SEGMENTS_WITHOUT_DATA) {
+    private static boolean addSegmentToGeoJson(Segment segment, StringBuilder geoJSONContent,
+                                               CommandLineArguments cla) {
+        if (!cla.getIgnoreIrrelevantSegments()) {
             geoJSONContent.append(segment.toGeoJson().replaceAll("NaN","-1"));
             numberOfRelevantSegments++;
             return true;
         } else {
-            if (isRelevant(segment)) {
+            if (isRelevant(segment, cla)) {
                 geoJSONContent.append(segment.toGeoJson().replaceAll("NaN","-1"));
                 numberOfRelevantSegments++;
                 return true;
@@ -193,20 +194,20 @@ public class SegmentMapper {
         return false;
     }
 
-	public static boolean isRelevant(Segment segment) {
+	public static boolean isRelevant(Segment segment, CommandLineArguments cla) {
 		if (segment instanceof Junction) {
 			Junction junction = (Junction) segment;
-			boolean rides = junction.numberOfRides >= RELEVANCE_THRESHOLD_RIDECOUNT;
-			boolean score = (junction.getScore() >= RELEVANCE_THRESHOLD_SCORE) &&
-					(junction.numberOfRides >= RELEVANCE_THRESHOLD_RIDECOUNT_HIGH_SCORE);
+			boolean rides = junction.numberOfRides >= cla.getRelevanceThresholdRideCount();
+			boolean score = (junction.getScore() >= cla.getRelevanceThresholdScore()) &&
+					(junction.numberOfRides >= cla.getRelevanceThresholdScoreRideCount());
 
 			return rides || score;
 		} else {
 			Street street = (Street) segment;
 			int numRides = street.numberOfRidesSouthWest + street.numberOfRidesNorthEast;
-			boolean rides = numRides >= RELEVANCE_THRESHOLD_RIDECOUNT;
-			boolean score = (street.getScore() >= RELEVANCE_THRESHOLD_SCORE) &&
-					(numRides >= RELEVANCE_THRESHOLD_RIDECOUNT_HIGH_SCORE);
+			boolean rides = numRides >= cla.getRelevanceThresholdRideCount();
+			boolean score = (street.getScore() >= cla.getRelevanceThresholdScore()) &&
+					(numRides >= cla.getRelevanceThresholdScoreRideCount());
 
 			return rides || score;
 		}

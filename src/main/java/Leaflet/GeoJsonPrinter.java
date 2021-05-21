@@ -2,6 +2,7 @@ package Leaflet;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -24,14 +25,14 @@ public class GeoJsonPrinter {
 
     public static String geoJSONTail() { return "]}";}
 
-    public static void writeGeoJSON(String content, String filePath) {
+    public static void writeGeoJSON(String content, File outputFile) {
         try {
             String json = geoJSONHead() + content + geoJSONTail();
 //            JSONObject jsonObject = new JSONObject(json);
 //            json = jsonObject.toString(1);
 
-            Files.deleteIfExists(Paths.get(filePath));
-            Files.write(Paths.get(filePath), json.getBytes(),
+            Files.deleteIfExists(outputFile.toPath());
+            Files.write(outputFile.toPath(), json.getBytes(),
                     StandardOpenOption.CREATE_NEW);
         } catch (IOException e) {
             e.printStackTrace();

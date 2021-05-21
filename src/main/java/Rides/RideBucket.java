@@ -25,6 +25,8 @@ import static Config.Config.*;
 import static Leaflet.LeafletPrinter.*;
 
 public class RideBucket {
+    public static final double MATCH_THRESHOLD = 0.0005;
+
     public double lat, lon;
     public long timestamp;
     Segment segment;
