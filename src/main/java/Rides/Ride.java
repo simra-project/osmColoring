@@ -4,6 +4,7 @@ import Segments.Junction;
 import Segments.Segment;
 import Segments.Street;
 import geobroker.Raster;
+import main.CommandLineArguments;
 
 import java.awt.geom.Path2D;
 import java.io.*;
@@ -14,9 +15,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import static Config.Config.BBOX_LATS;
-import static Config.Config.BBOX_LONS;
-
 public class Ride {
 
     public List<RideBucket> rideBuckets = new ArrayList<>();
@@ -25,7 +23,7 @@ public class Ride {
     public int numberOfMatchedIncidents = 0;
     private List<RideBucket> unmatchedRideBuckets = new ArrayList<>();
 
-    public Ride(String pathToRide, HashMap<String, Segment> segmentMap, Raster raster) {
+    public Ride(String pathToRide, HashMap<String, Segment> segmentMap, Raster raster, CommandLineArguments cla) {
 
         File rideFile = new File(pathToRide);
         try (BufferedReader br = new BufferedReader(new FileReader(rideFile))) {
@@ -68,7 +66,7 @@ public class Ride {
                         String[] lineArray = line.split(",",-1);
                         List<Segment> visitedSegments = new ArrayList<>();
                         thisRideBucket = new RideBucket(Double.valueOf(lineArray[0]),Double.valueOf(lineArray[1]),Long.valueOf(lineArray[5]),segmentMap,raster, (ArrayList<Segment>) visitedSegments, pathToRide, this);
-                        if (!thisRideBucket.matchedToSegment && isInBoundingBox(thisRideBucket.lat,thisRideBucket.lon,BBOX_LATS,BBOX_LONS)) {
+                        if (!thisRideBucket.matchedToSegment && isInBoundingBox(thisRideBucket.lat,thisRideBucket.lon,cla.getBBOX_LATS(),cla.getBBOX_LONS())) {
                             unmatchedRideBuckets.add(thisRideBucket);
                         }
                         rideBuckets.add(thisRideBucket);
@@ -182,7 +180,7 @@ public class Ride {
         return direction;
     }
 
-    public static boolean isInBoundingBox(double lat, double lon, double[] polygonLats, double[] polygonLons) {
+    public static boolean isInBoundingBox(double lat, double lon, Double[] polygonLats, Double[] polygonLons) {
 
         Path2D path = new Path2D.Double();
 

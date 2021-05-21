@@ -21,9 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static Config.Config.*;
-import static Leaflet.LeafletPrinter.*;
-
 public class RideBucket {
     public static final double MATCH_THRESHOLD = 0.0005;
 
