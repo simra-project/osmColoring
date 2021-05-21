@@ -30,8 +30,9 @@ public class GeoJsonPrinter {
 //            JSONObject jsonObject = new JSONObject(json);
 //            json = jsonObject.toString(1);
 
+            Files.deleteIfExists(Paths.get(filePath));
             Files.write(Paths.get(filePath), json.getBytes(),
-                    StandardOpenOption.CREATE);
+                    StandardOpenOption.CREATE_NEW);
         } catch (IOException e) {
             e.printStackTrace();
         }

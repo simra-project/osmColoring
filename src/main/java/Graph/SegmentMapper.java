@@ -78,6 +78,7 @@ public class SegmentMapper {
 
         int numberOfSegmentsWithRides = 0;
         int segmentIndex = 0;
+        boolean added = true; // stores wether a segment was added
         for (Map.Entry<String,Segment> stringSegmentEntry : segmentMap.entrySet()) {
             Segment segment = stringSegmentEntry.getValue();
             if (hasRide(segment)) {
@@ -148,16 +149,22 @@ public class SegmentMapper {
                 }
                 streetList.add(street);
             }
-            addSegmentToGeoJson(segment, geoJSONContent);
-            if (segmentIndex < segmentMap.size() - 1) {
+            added = addSegmentToGeoJson(segment, geoJSONContent);
+            if (added && segmentIndex < segmentMap.size() - 1) {
                 // add comma and line breaks since there will be more segments
                 geoJSONContent.append(",\n\n");
-            } else {
-                // only add line breaks
+            } else if (added) {
+                // only add line breaks since last line
                 geoJSONContent.append("\n\n");
             }
             segmentIndex++;
         }
+        // remove trailing comma which occurs if there was not a segment added in the end
+        if (!added) {
+            // logger.info(geoJSONContent.substring(geoJSONContent.length()-10));
+            geoJSONContent.deleteCharAt(geoJSONContent.length()-3);
+        }
+
         logger.info("Number of Segments: " + segmentMap.size());
         logger.info("Number of Segments with at least 1 ride: " + numberOfSegmentsWithRides);
         logger.info("Number of relevant segments: " + numberOfRelevantSegments);
@@ -168,30 +175,41 @@ public class SegmentMapper {
         return segment.rides.size() > 0;
     }
 
-    private static void addSegmentToGeoJson(Segment segment, StringBuilder geoJSONContent) {
+    /**
+     * Returns true, if a segment was added, and false otherwise (e.g., because it was not relevant).
+     */
+    private static boolean addSegmentToGeoJson(Segment segment, StringBuilder geoJSONContent) {
         if (SHOW_SEGMENTS_WITHOUT_DATA) {
             geoJSONContent.append(segment.toGeoJson().replaceAll("NaN","-1"));
             numberOfRelevantSegments++;
+            return true;
         } else {
             if (isRelevant(segment)) {
                 geoJSONContent.append(segment.toGeoJson().replaceAll("NaN","-1"));
                 numberOfRelevantSegments++;
+                return true;
             }
         }
+        return false;
     }
 
-    public static boolean isRelevant(Segment segment) {
-        // gelb 50 Fahrten oder 10 Fahrten und mindestens orange
-        // nicht jedes davon schwerpunkt
-        if (segment instanceof Junction) {
-            Junction junction = (Junction) segment;
-            return (junction.numberOfRides >= RELEVANCE_THRESHOLD_RIDECOUNT_HIGH_SCORE );
-        } else {
-            Street street = (Street) segment;
-            return (street.numberOfRidesSouthWest + street.numberOfRidesNorthEast >= RELEVANCE_THRESHOLD_RIDECOUNT_HIGH_SCORE);
-        }
+	public static boolean isRelevant(Segment segment) {
+		if (segment instanceof Junction) {
+			Junction junction = (Junction) segment;
+			boolean rides = junction.numberOfRides >= RELEVANCE_THRESHOLD_RIDECOUNT;
+			boolean score = (junction.getScore() >= RELEVANCE_THRESHOLD_SCORE) &&
+					(junction.numberOfRides >= RELEVANCE_THRESHOLD_RIDECOUNT_HIGH_SCORE);
 
-    }
+			return rides || score;
+		} else {
+			Street street = (Street) segment;
+			int numRides = street.numberOfRidesSouthWest + street.numberOfRidesNorthEast;
+			boolean rides = numRides >= RELEVANCE_THRESHOLD_RIDECOUNT;
+			boolean score = (street.getScore() >= RELEVANCE_THRESHOLD_SCORE) &&
+					(numRides >= RELEVANCE_THRESHOLD_RIDECOUNT_HIGH_SCORE);
 
+			return rides || score;
+		}
+	}
 
 }
