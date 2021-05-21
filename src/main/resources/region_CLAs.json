@@ -1,0 +1,122 @@
+{
+    "berlin": {
+        "minRides": 50,
+        "minScore": 0.25,
+        "minScoreRides": 10
+    },
+    "stuttgart": {
+        "minRides": 20,
+        "minScore": 0.25,
+        "minScoreRides": 5
+    },
+    "nürnberg": {
+        "minRides": 20,
+        "minScore": 0.25,
+        "minScoreRides": 5
+    },
+    "konstanz": {
+        "minRides": 20,
+        "minScore": 0.25,
+        "minScoreRides": 5
+    },
+    "karlsruhe": {
+        "minRides": 15,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "mannheim": {
+        "minRides": 15,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "freiburg": {
+        "minRides": 15,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "tübingen": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "mainz": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "rastatt": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "kaiserslautern": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "saarlouis": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "landau": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "frankfurt": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "bruchsal": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "breisgau": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "alzey": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "koblenz": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "odenwaldkreis": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "ortenaukreis": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "vulkaneifel": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "wetteraukreis": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "trier": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    },
+    "tuttlingen": {
+        "minRides": 10,
+        "minScore": 0.25,
+        "minScoreRides": 3
+    }
+}
