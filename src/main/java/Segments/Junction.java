@@ -10,11 +10,12 @@ import static Config.Config.*;
 
 public class Junction extends Segment implements Comparable<Junction> {
     public int numberOfRides, numberOfIncidents, numberOfScaryIncidents, numberOfNonScaryIncidents;
-    public int[] scaryIncidentTypes = new int[9], nonScaryIncidentTypes = new int[9], lanes_bw;
+    public int[] scaryIncidentTypes = new int[9], nonScaryIncidentTypes = new int[9];
+    public double[] lanes_bw;
     public double dangerousnessScore;
 
 
-    public Junction(String id, double[] lats, double[] lons, HashSet<String> highwayName, String[] highWayTypes, int[] highWayLanes, int[] lanes_bw, double[] polyLats, double[] polyLons) {
+    public Junction(String id, double[] lats, double[] lons, HashSet<String> highwayName, String[] highWayTypes, double[] highWayLanes, double[] lanes_bw, double[] polyLats, double[] polyLons) {
         this.id = id;
         this.lats = lats;
         this.lons = lons;

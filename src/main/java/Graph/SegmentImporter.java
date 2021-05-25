@@ -50,12 +50,12 @@ public class SegmentImporter {
                         .replace("]","")
                         .replaceAll("'","")
                         .split(", ");
-                int[] highWayLanesArray = new int[highWayLanesStrings.length];
+                double[] highWayLanesArray = new double[highWayLanesStrings.length];
                 for (int i = 0; i < highWayLanesStrings.length; i++) {
                     if(highWayLanesStrings[i].equals("unknown")) {
                         highWayLanesArray[i] = -1;
                     } else {
-                        highWayLanesArray[i] = Integer.valueOf(highWayLanesStrings[i]);
+                        highWayLanesArray[i] = Double.valueOf(highWayLanesStrings[i]);
                     }
                 }
                 String[] lanes_bwStrings = junctionLineArray[7]
@@ -64,12 +64,12 @@ public class SegmentImporter {
                         .replace("]","")
                         .replaceAll("'","")
                         .split(", ");
-                int[] lanes_bwArray = new int[lanes_bwStrings.length];
+                double[] lanes_bwArray = new double[lanes_bwStrings.length];
                 for (int i = 0; i < lanes_bwStrings.length; i++) {
                     if(lanes_bwStrings[i].equals("unknown")) {
-                        lanes_bwArray[i] = -1;
+                        lanes_bwArray[i] = -1.0;
                     } else {
-                        lanes_bwArray[i] = Integer.valueOf(lanes_bwStrings[i]);
+                        lanes_bwArray[i] = Double.valueOf(lanes_bwStrings[i]);
                     }
                 }
                 String[] polyLatsStrings = junctionLineArray[9]
@@ -110,11 +110,11 @@ public class SegmentImporter {
                 String id =  streetsLineArray[1] + ".0";
                 String highwayname = streetsLineArray[2].split(",",-1)[0].replaceAll("\"","");
                 String[] highWayTypesArray = {streetsLineArray[3]};
-                int highwaylanes = -1;
+                double highwaylanes = -1;
                 if (streetsLineArray[4].length()==1) {
-                    highwaylanes = Integer.valueOf(streetsLineArray[4]);
+                    highwaylanes = Double.valueOf(streetsLineArray[4]);
                 } else if (streetsLineArray[4].length()>1 && !streetsLineArray[4].contains("u")) {
-                    highwaylanes = Integer.valueOf(streetsLineArray[4].split(",")[0]);
+                    highwaylanes = Double.valueOf(streetsLineArray[4].split(",")[0]);
                 }
 
                 String[] lanes_BackwardStrings = streetsLineArray[5]
@@ -122,14 +122,14 @@ public class SegmentImporter {
                         .replace("[","")
                         .replace("}","")
                         .split(", ",-1);
-                int[] lanes_Backward = new int[lanes_BackwardStrings.length];
+                double[] lanes_Backward = new double[lanes_BackwardStrings.length];
                 for (int i = 0; i < lanes_BackwardStrings.length; i++) {
                     if (lanes_BackwardStrings[i].length()>0) {
-                        lanes_Backward[i] = Integer.valueOf(lanes_BackwardStrings[i]);
+                        lanes_Backward[i] = Double.valueOf(lanes_BackwardStrings[i]);
                     }
                 }
                 if (lanes_Backward.length<1) {
-                    lanes_Backward = new int[1];
+                    lanes_Backward = new double[1];
                     lanes_Backward[0] = -1;
                 }
                 String[] segment_nodesStrings = streetsLineArray[6]

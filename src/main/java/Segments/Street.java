@@ -9,14 +9,16 @@ import java.util.*;
 import static Config.Config.*;
 
 public class Street extends Segment implements Comparable<Street> {
-    public int lanes, numberOfSegmentOfStreet;
+    public int numberOfSegmentOfStreet;
+    public double lanes;
     public String partOfStreetWithId;
     public String[] segment_nodes;
     public int numberOfRidesSouthWest, numberOfRidesNorthEast, numberOfIncidentsSouthWest, numberOfIncidentsNorthEast, numberOfScaryIncidentsSouthWest, numberOfScaryIncidentsNorthEast, numberOfNonScaryIncidentsSouthWest, numberOfNonScaryIncidentsNorthEast;
-    public int[] lanes_backward, scaryIncidentTypesSouthWest = new int[9], scaryIncidentTypesNorthEast = new int[9], nonScaryIncidentTypesSouthWest = new int[9], nonScaryIncidentTypesNorthEast = new int[9];
+    public int[] scaryIncidentTypesSouthWest = new int[9], scaryIncidentTypesNorthEast = new int[9], nonScaryIncidentTypesSouthWest = new int[9], nonScaryIncidentTypesNorthEast = new int[9];
+    public double[] lanes_backward;
     public double seg_length, scoreSouthWest, scoreNorthEast, score;
 
-    public Street(String id, String highWayName, String[] highWayTypes, int highwayLanes, int[] highwayLanes_backward, String[] segment_nodes, double seg_length, double[] poly_vertices_latsArray, double[] poly_vertices_lonsArray) {
+    public Street(String id, String highWayName, String[] highWayTypes, double highwayLanes, double[] highwayLanes_backward, String[] segment_nodes, double seg_length, double[] poly_vertices_latsArray, double[] poly_vertices_lonsArray) {
         super();
         this.highWayTypes = highWayTypes;
         this.id = id;

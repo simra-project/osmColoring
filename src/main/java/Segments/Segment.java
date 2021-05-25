@@ -13,7 +13,7 @@ public class Segment {
     public String id;
     public String[] highWayTypes;
     public HashSet<String> highwayName;
-    public int[] highWayLanes;
+    public double[] highWayLanes;
     public Geofence geofence;
     public double[] lats, lons;
     public List<Segment> neighbors = new ArrayList<>();
