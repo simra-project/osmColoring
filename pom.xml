@@ -6,7 +6,7 @@
 
     <groupId>tuberlin.mcc.simra</groupId>
     <artifactId>osmColoring</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <properties>
         <kotlin.version>1.4.32</kotlin.version>
@@ -140,13 +140,12 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <outputDirectory>out/</outputDirectory>
+                    <outputDirectory>target/</outputDirectory>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>SimRa MapJson</id>
+                        <id>osmColoring</id>
                         <configuration>
-                            <appendAssemblyId>false</appendAssemblyId>
                             <archive>
                                 <manifest>
                                     <mainClass>main.MainKt</mainClass>
@@ -158,7 +157,7 @@
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
-                            <finalName>SimRa-MapJson</finalName>
+                            <finalName>osmColoring</finalName>
                         </configuration>
                         <phase>package</phase>
                         <goals>
