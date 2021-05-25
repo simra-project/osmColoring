@@ -43,6 +43,10 @@ class CommandLineArguments(parser: ArgParser) {
             require(File(value).exists()) { "$value does not exist" }
         }
 
+    val suffix by parser
+        .storing("--suffix", help = "suffix for generated json file")
+        .default("")
+
     val osmDataDir by parser
         .storing("--osmDir", help = "path to directory in which the by osmPreparation generated files can be found")
         .default("osm_data/")
@@ -82,7 +86,7 @@ class CommandLineArguments(parser: ArgParser) {
         ) { this.toBoolean() }
         .default(true)
 
-    val jsonOutputFile = File("$outputDir/$region.json")
+    val jsonOutputFile = File("$outputDir/$region$suffix.json")
 
     val osmJunctionFile = File(osmDataDir).listFiles()!!.filter { it.name.startsWith("${region}_junctions") }.first()
     val osmSegmentsFile = File(osmDataDir).listFiles()!!.filter { it.name.startsWith("${region}_segments") }.first()
@@ -125,7 +129,7 @@ class CommandLineArguments(parser: ArgParser) {
      ****************************************************************/
 
     override fun toString(): String {
-        return "CommandLineArguments(simraRoot=$simraRoot, region='$region', outputDir='$outputDir', osmDataDir='$osmDataDir', scarinessFactor=$scarinessFactor, relevance_threshold_ride_count=$relevanceThresholdRideCount, relevance_threshold_score=$relevanceThresholdScore, relevance_threshold_score_ride_count=$relevanceThresholdScoreRideCount, ignore_irrelevant_segments=$ignoreIrrelevantSegments, jsonOutputFile=$jsonOutputFile, osmJunctionFile=$osmJunctionFile, osmSegmentsFile=$osmSegmentsFile, osmMetaFile=$osmMetaFile)"
+        return "CommandLineArguments(simraRoot=$simraRoot, region='$region', outputDir='$outputDir', suffix='$suffix', osmDataDir='$osmDataDir', scarinessFactor=$scarinessFactor, relevanceThresholdRideCount=$relevanceThresholdRideCount, relevanceThresholdScore=$relevanceThresholdScore, relevanceThresholdScoreRideCount=$relevanceThresholdScoreRideCount, ignoreIrrelevantSegments=$ignoreIrrelevantSegments, jsonOutputFile=$jsonOutputFile, osmJunctionFile=$osmJunctionFile, osmSegmentsFile=$osmSegmentsFile, osmMetaFile=$osmMetaFile, BBOX_LATS=${BBOX_LATS.contentToString()}, BBOX_LONS=${BBOX_LONS.contentToString()})"
     }
 
 }
