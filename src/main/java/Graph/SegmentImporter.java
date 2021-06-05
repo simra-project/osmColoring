@@ -46,10 +46,12 @@ public class SegmentImporter {
                         .split(", ");
                 String[] highWayLanesStrings = junctionLineArray[6]
                         .replaceAll("\"","")
+                        .replaceAll(", ",",") // might work
                         .replace("[","")
                         .replace("]","")
                         .replaceAll("'","")
-                        .split(", ");
+                        .split(",");
+                        //.split(",/s|,");
                 double[] highWayLanesArray = new double[highWayLanesStrings.length];
                 for (int i = 0; i < highWayLanesStrings.length; i++) {
                     if(highWayLanesStrings[i].equals("unknown")) {

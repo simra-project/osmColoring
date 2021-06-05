@@ -13,5 +13,7 @@ fun main(args: Array<String>) {
 
     logger.info(cla.toString())
 
+    cla.toMetaFile()
+
     doSegmentMapping(cla)
 }
