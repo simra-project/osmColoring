@@ -90,7 +90,8 @@ class CommandLineArguments(parser: ArgParser) {
         ) { this.toBoolean() }
         .default(true)
 
-    val jsonOutputFile = File("$outputDir/$region$suffix.json")
+    // Specify name of JSON output file depending on relevanceThresholdRideCount (= minRides)
+    val jsonOutputFile = if (relevanceThresholdRideCount == 1) File("$outputDir/${region}_all.json") else File("$outputDir/$region.json")
 
     val osmJunctionFile = File(osmDataDir).listFiles()!!.filter { it.name.startsWith("${region}_junctions") }.first()
     val osmSegmentsFile = File(osmDataDir).listFiles()!!.filter { it.name.startsWith("${region}_segments") }.first()
@@ -132,48 +133,59 @@ class CommandLineArguments(parser: ArgParser) {
 
     fun toMetaFile(): Unit {
 
+        /** Get current date */
+
         val todays_date = LocalDate.now()
 
         val today = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(todays_date)
-
-        /*************************************************************************************
-         * 'Standard' meta file
-         *************************************************************************************/
-
-        val meta_standard = JSONObject()
-        meta_standard.put("regionTitle", "SimRa Analysekarte für $region")
-        meta_standard.put("regionDescription", "Für $region werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die entweder a) <b>mindestens $relevanceThresholdRideCount Fahrten</b> oder b) <b>mindestens $relevanceThresholdScoreRideCount Fahrten und ein Gefahrenscore von $relevanceThresholdScore</b> oder mehr vorliegen.")
-        meta_standard.put("regionDate", "Karte generiert am $today")
 
         /** Grab centroid from meta file */
 
         val jsonO = JSONObject(osmMetaFile.readLines().joinToString(""))
         val centroid = jsonO["centroid"]
 
-        meta_standard.put("mapView",centroid)
-        meta_standard.put("mapZoom", 12)
+        /** Output '{region}_all-meta.json' if relevanceThresholdRideCount (= minRides)
+         * equals 1, else '{region}-meta.json'*/
 
-        val meta_file_standard = "$outputDir/$region-meta.json"
-        val standard_meta_file = File(meta_file_standard)
+        if (relevanceThresholdRideCount == 1) {
 
-        standard_meta_file.writeText(meta_standard.toString(2))
+            /*************************************************************************************
+             * 'All' meta file
+             *************************************************************************************/
 
-        /*************************************************************************************
-         * 'All' meta file
-         *************************************************************************************/
+            val meta_all = JSONObject()
+            meta_all.put("regionTitle", "SimRa Analysekarte für $region")
+            meta_all.put("regionDescription", "Für $region werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die <b>mindestens 1 Fahrt</b> vorliegt.")
+            meta_all.put("regionDate", "Karte generiert am $today")
 
-        val meta_all = JSONObject()
-        meta_all.put("regionTitle", "SimRa Analysekarte für $region")
-        meta_all.put("regionDescription", "Für $region werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die <b>mindestens 1 Fahrt</b> vorliegt.")
-        meta_all.put("regionDate", "Karte generiert am $today")
+            meta_all.put("mapView", centroid)
+            meta_all.put("mapZoom", 12)
 
-        meta_all.put("mapView",centroid)
-        meta_all.put("mapZoom", 12)
+            val meta_file_all = "$outputDir/${region}_all-meta.json"
+            val all_meta_file = File(meta_file_all)
 
-        val meta_file_all = "$outputDir/${region}_all-meta.json"
-        val all_meta_file = File(meta_file_all)
+            all_meta_file.writeText(meta_all.toString(2))
 
-        all_meta_file.writeText(meta_all.toString(2))
+        } else {
+
+            /*************************************************************************************
+             * 'Standard' meta file
+             *************************************************************************************/
+
+            val meta_standard = JSONObject()
+            meta_standard.put("regionTitle", "SimRa Analysekarte für $region")
+            meta_standard.put("regionDescription", "Für $region werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die entweder a) <b>mindestens $relevanceThresholdRideCount Fahrten</b> oder b) <b>mindestens $relevanceThresholdScoreRideCount Fahrten und ein Gefahrenscore von $relevanceThresholdScore</b> oder mehr vorliegen.")
+            meta_standard.put("regionDate", "Karte generiert am $today")
+
+            meta_standard.put("mapView",centroid)
+            meta_standard.put("mapZoom", 12)
+
+            val meta_file_standard = "$outputDir/$region-meta.json"
+            val standard_meta_file = File(meta_file_standard)
+
+            standard_meta_file.writeText(meta_standard.toString(2))
+
+        }
     }
 
     /*****************************************************************
