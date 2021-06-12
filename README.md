@@ -23,7 +23,6 @@ For a specific SimRa region, you will need:
 The entry point for running this project is `src/kotlin/main/Main.kt`. 
 
 A number of input parameters can be specified, with defaults being provided for each (except `r`, region). Therefore, if the defaults are to be accepted only `r` (region) needs to be specified.
-- `-h`/`--help`
 - `-s`/`--simraRoot`: the directory from which the incident data will be read. `osmColoring/osm_data` by default.
 - `-r`/`--region`: the region the computations shall be carried out for.
 - `-o`/`--outputDir: the directory into which output data will be written, i.e. `{region}.json` (the to-be-visualized data) as well as files containing meta-information (`{region}-meta.json`, `{region_all-meta.json}`) such as utilized cut-off values for input parameters listed below.
@@ -34,6 +33,7 @@ Default: `osmColoring/output_data`.
 - `--minScore`, `--minScoreRides`: as described above, a junction/segment needs to have at least `minRides` associated with it to be included. Using `minScore` and `minScoreRides`, this requirement can be overriden: junctions/segments with a dangerousness
 score of at least `minScore` only need to exhibit at least `minScoreRides` to be included. 
 - `-i`/`--ignore`: ignore irrelevant segments defined with `minRides`, `minScore`, and minScoreRides`.
+- `-h`/`--help`: print help message and exit.
 
 Below is an example run configuration in IntelliJ IDEA, using the default values for the three I/O directories (`simraroot`, `osmDir`, `outputdir`).
 
