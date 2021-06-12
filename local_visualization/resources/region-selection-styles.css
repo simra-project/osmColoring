@@ -1,0 +1,75 @@
+body {
+    margin: 0;
+    font-family: Georgia,Times,Times New Roman,serif;
+}
+
+.flex-header {
+    width: 100%;
+    display: flex;
+    background-color: #FFFFFF;
+    padding: 5px;
+    align-items: center;
+    text-align: center;
+}
+
+#mcc-logo {
+    margin: 10px;
+}
+
+#select-region {
+    display: block;
+    font-size: 16px;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-weight: 500;
+    color: #444;
+    line-height: 1.3;
+    padding: .6em 1.4em .5em .8em;
+    width: 30%;
+    max-width: 30%; /* useful when width is set to anything other than 100% */
+    box-sizing: border-box;
+    margin: 0 auto;
+    border: 1px solid #aaa;
+    box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+    border-radius: .5em;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: #fff;
+}
+
+.flex-chart-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100vw;
+    height: 100vh;
+}
+
+.flex-chart-child {
+    flex-basis: 50%;
+    max-width: 50%;
+    max-height: 50%;
+    min-height: 50%;
+    padding: 0 4px;
+    margin-top: 8px;
+    /*vertical-align: middle;*/
+    overflow: hidden;
+}
+
+/* Responsive layout - makes a one column-layout instead of four columns */
+@media (max-width: 800px) {
+    .flex-chart-container {
+        flex-direction: column;
+        flex-wrap: nowrap;
+    }
+    .flex-chart-child {
+        flex-basis: 100%;
+        min-width: 95%;
+        min-height: 60%;
+        max-width: 95%;
+        max-height: 60%;
+    }
+    .flex-header {
+        flex-direction: column;
+    }
+}

@@ -46,11 +46,11 @@ Output data (written to `outputDir`):
 
 ## Viewing the result on a map
 
-A subset of the [SimRa project website](https://github.com/simra-project/simra-project.github.io) has been placed into `osmColoring/simra-project.github.io`. This way, the data written to `osmColoring/output_data` can be viewed on a map.
-All you need to do is start `osmColoring/simra-project.github.io/index.html` on a local server and select the respective region from the dropdown (select `{region}_all` in order to view data sets that were generated
+A subset of the [SimRa project website](https://github.com/simra-project/simra-project.github.io) has been placed into `osmColoring/local_visualization`. This way, the data written to `osmColoring/output_data` can be viewed on a map.
+All you need to do is start `osmColoring/local_visualization/index.html` on a local server and select the respective region from the dropdown (select `{region}_all` in order to view data sets that were generated
 with `minRides` set to 1).
 
-Note that if you are not using the default value for `outputDir` (which is `osmColoring/output_data`), you have to adjust the paths in `osmColoring/simra-project.github.io/resources/map-region.js` accordingly.
+Note that if you are not using the default value for `outputDir` (which is `osmColoring/output_data`), you have to adjust the paths in `osmColoring/local_visualization/resources/map-region.js` accordingly.
 
 For starting a local server: if using IntelliJ IDEA, install the php plugin, right-click on `index.html` and then select 'open in browser'. If using VS Code, a local server can be started by selecting 'Go live' in the bottom right corner.
 
