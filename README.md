@@ -15,7 +15,7 @@ junction/segment, with incidents marked as **scary** weighing 4.4 times as much 
 ## Required data
 
 For a specific SimRa region, you will need:
-- incident data (obtained from https://github.com/simra-project/dataset), only Berlin thus far, but other data upon request (insert link)
+- incident data (obtained from https://github.com/simra-project/dataset), only Berlin thus far, but other data upon request (see [instructions in bottom section](https://simra-project.github.io/mitmachen.html))
 - three files written by [osmPreparation](https://github.com/simra-project/osmPreparation): `{region}_segments_complete_YYY-MM-DD.csv`,  `{region}_junctions_complete_YYY-MM-DD.csv`, as well as `{region}_meta.json`.
 
 ## How to use
