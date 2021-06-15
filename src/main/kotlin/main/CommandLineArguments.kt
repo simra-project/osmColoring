@@ -7,6 +7,10 @@ import org.apache.logging.log4j.LogManager
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+
 
 private val logger = LogManager.getLogger()
 
@@ -66,27 +70,28 @@ class CommandLineArguments(parser: ArgParser) {
 
     val relevanceThresholdScore by parser
         .storing(
-            "--minScore",
-            help = "the minimum score for a segment to be included when using --minScoreRides"
+                "--minScore",
+                help = "the minimum score for a segment to be included when using --minScoreRides"
         ) { this.toDouble() }
         .default(0.25)
 
     val relevanceThresholdScoreRideCount by parser
         .storing(
-            "--minScoreRides",
-            help = "the minimum number of rides for a segment to be included when using --minScore"
+                "--minScoreRides",
+                help = "the minimum number of rides for a segment to be included when using --minScore"
         ) { this.toInt() }
         .default(10)
 
     val ignoreIrrelevantSegments by parser
         .storing(
-            "-i",
-            "--ignore",
-            help = "ignore irrelevant segments defined with --minRides, --minScore, and --minScoreRides "
+                "-i",
+                "--ignore",
+                help = "ignore irrelevant segments defined with --minRides, --minScore, and --minScoreRides "
         ) { this.toBoolean() }
         .default(true)
 
-    val jsonOutputFile = File("$outputDir/$region$suffix.json")
+    // Specify name of JSON output file depending on relevanceThresholdRideCount (= minRides)
+    val jsonOutputFile = if (relevanceThresholdRideCount == 1) File("$outputDir/${region}_all.json") else File("$outputDir/$region.json")
 
     val osmJunctionFile = File(osmDataDir).listFiles()!!.filter { it.name.startsWith("${region}_junctions") }.first()
     val osmSegmentsFile = File(osmDataDir).listFiles()!!.filter { it.name.startsWith("${region}_segments") }.first()
@@ -122,6 +127,65 @@ class CommandLineArguments(parser: ArgParser) {
         logger.debug("BBOX_LONS: $BBOX_LONS")
 
         return Pair(BBOX_LATS, BBOX_LONS)
+    }
+
+    /** Generate meta files */
+
+    fun toMetaFile(): Unit {
+
+        /** Get current date */
+
+        val todays_date = LocalDate.now()
+
+        val today = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(todays_date)
+
+        /** Grab centroid from meta file */
+
+        val jsonO = JSONObject(osmMetaFile.readLines().joinToString(""))
+        val centroid = jsonO["centroid"]
+
+        /** Output '{region}_all-meta.json' if relevanceThresholdRideCount (= minRides)
+         * equals 1, else '{region}-meta.json'*/
+
+        if (relevanceThresholdRideCount == 1) {
+
+            /*************************************************************************************
+             * 'All' meta file
+             *************************************************************************************/
+
+            val meta_all = JSONObject()
+            meta_all.put("regionTitle", "SimRa Analysekarte für $region")
+            meta_all.put("regionDescription", "Für $region werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die <b>mindestens 1 Fahrt</b> vorliegt.")
+            meta_all.put("regionDate", "Karte generiert am $today")
+
+            meta_all.put("mapView", centroid)
+            meta_all.put("mapZoom", 12)
+
+            val meta_file_all = "$outputDir/${region}_all-meta.json"
+            val all_meta_file = File(meta_file_all)
+
+            all_meta_file.writeText(meta_all.toString(2))
+
+        } else {
+
+            /*************************************************************************************
+             * 'Standard' meta file
+             *************************************************************************************/
+
+            val meta_standard = JSONObject()
+            meta_standard.put("regionTitle", "SimRa Analysekarte für $region")
+            meta_standard.put("regionDescription", "Für $region werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die entweder a) <b>mindestens $relevanceThresholdRideCount Fahrten</b> oder b) <b>mindestens $relevanceThresholdScoreRideCount Fahrten und ein Gefahrenscore von $relevanceThresholdScore</b> oder mehr vorliegen.")
+            meta_standard.put("regionDate", "Karte generiert am $today")
+
+            meta_standard.put("mapView",centroid)
+            meta_standard.put("mapZoom", 12)
+
+            val meta_file_standard = "$outputDir/$region-meta.json"
+            val standard_meta_file = File(meta_file_standard)
+
+            standard_meta_file.writeText(meta_standard.toString(2))
+
+        }
     }
 
     /*****************************************************************
