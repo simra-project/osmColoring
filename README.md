@@ -32,7 +32,7 @@ Default: `osmColoring/output_data`.
 - `--minRides`: the minimum number of rides that need to be associated with a segment or junction for it to be included. Default is 50. **Please note: when `minRides` is set to 1, the name of the output files will differ. Please refer to the section on output files for more information.**
 - `--minScore`, `--minScoreRides`: as described above, a junction/segment needs to have at least `minRides` associated with it to be included. Using `minScore` and `minScoreRides`, this requirement can be overriden: junctions/segments with a dangerousness
 score of at least `minScore` only need to exhibit at least `minScoreRides` to be included. 
-- `-i`/`--ignore`: ignore irrelevant segments defined with `minRides`, `minScore`, and minScoreRides`.
+- `-i`/`--ignore` (boolean): ignore irrelevant segments defined with `minRides`, `minScore`, and `minScoreRides`. Default is `true`.
 - `-h`/`--help`: print help message and exit.
 
 Below is an example run configuration in IntelliJ IDEA, using the default values for the three I/O directories (`simraroot`, `osmDir`, `outputdir`).
@@ -46,13 +46,31 @@ Output data (written to `outputDir`):
 
 ## Viewing the result on a map
 
-A subset of the [SimRa project website](https://github.com/simra-project/simra-project.github.io) has been placed into `osmColoring/local_visualization`. This way, the data written to `osmColoring/output_data` can be viewed on a map.
-All you need to do is start `osmColoring/local_visualization/index.html` on a local server and select the respective region from the dropdown (select `{region}_all` in order to view data sets that were generated
-with `minRides` set to 1).
+This project contains the [SimRa project website](https://simra-project.github.io/) as a submodule for the purpose of visualizing the resultant GeoJson data on a map.
+Analogous to the [map of Berlin results already published](https://simra-project.github.io/map.html?region=berlin), users can view the results for any region whose data they have access to.
 
-Note that if you are not using the default value for `outputDir` (which is `osmColoring/output_data`), you have to adjust the paths in `osmColoring/local_visualization/resources/map-region.js` accordingly.
-
-For starting a local server: if using IntelliJ IDEA, install the php plugin, right-click on `index.html` and then select 'open in browser'. If using VS Code, a local server can be started by selecting 'Go live' in the bottom right corner.
+This is how you can use the project website's code to plot your results:
+- The SimRa project website is embedded in this project as a sub-module (perhaps you've already noticed the empty `simra-project.github.io`directory). In order to activate
+the submodule, execute the following commands:
+```
+git submodule init
+git submodule update
+```
+- Move the files you've generated using this project (`{region}.json`/`{region}_all.json` and `{region}-meta.json`/`{region}_all-meta.json`) into `simra-project.github.io/region`.
+- In `simra-project.github.io/resources/map-region.js`, add the respective region to the `switch (params.get("region"))`-block. Example:
+```
+case "augsburg":
+        region = "region/Augsburg.json";
+        regionMeta = "region/Augsburg-meta.json";
+        break;
+``` 
+- Start a local HTTP server (inside the top level directory or the `simra-project.github.io` subdirectory, doesn't really matter): `python3 -m http.server`. In your browser, enter `localhost:8000`. 
+The directory structure will appear. If you're not already inside it, navigate into the directory `simra-project.github.io`. Select `map.html`.
+In the browser address bar, add the respective URL search parameter for the region in question. Example: 
+```
+http://localhost:8000/map.html?region=augsburg
+```
+- That's it! You should be able to view your results on a map. 
 
 ## ToDos
 
