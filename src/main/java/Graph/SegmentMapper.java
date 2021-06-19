@@ -53,17 +53,34 @@ public class SegmentMapper {
         List<Incident> unmatchedIncidents = new ArrayList<>();
         StringBuilder mapContent = new StringBuilder();
         StringBuilder geoJSONContent = new StringBuilder();
-        for (int i = 0; i < rideFolder.size(); i++) {
-            Ride ride = new Ride(rideFolder.get(i).getPath(),segmentMap,raster, cla);
-            if ( ride.rideBuckets.size() > 0 && isInBoundingBox(ride.rideBuckets.get(0).lat,ride.rideBuckets.get(0).lon,cla.getBBOX_LATS(),cla.getBBOX_LONS())) {
-                numberOfIncludedRides++;
-                numberOfMatchedIncidents += ride.numberOfMatchedIncidents;
-                unmatchedIncidents.addAll(ride.unmatchedIncidents);
-            }
-            numberOfAllRides ++;
-            ArrayList<RideBucket> unmatchedRideBuckets = ride.getUnmatchedRideBuckets();
-            numberOfUnmatchedRideBuckets += unmatchedRideBuckets.size();
-        }
+
+        /*****************************************************************************************************************/
+
+        /** (Recursively) iterate over rides in (possibly nested) directory */
+
+        /**
+         * Required parameters:
+         * - rideFolder (List<File)
+         * - segmentMap (HashMap<String, Segment>), raster (Raster), cla (CommandLineArguments) for Ride constructor
+         * - unmatchedIncidents: List<Incident>, don't need to return bc Java is call by value and a List's value is a reference
+         * - numberOfIncludedRides: int, for counting - need to return
+         * - numberOfMatchedIncidents: int, for counting - need to return
+         * - numberOfAllRides: int, for counting - need to return
+         * - numberOfUnMatchedRideBuckets: int, for counting - need to return
+         * - all in all, traverseRideDirectory needs to return 4 counter vars
+         */
+
+        int[] counters = {numberOfIncludedRides, numberOfMatchedIncidents, numberOfAllRides, numberOfUnmatchedRideBuckets};
+
+        int[] output = traverseRideDirectory(rideFolder, segmentMap, raster, cla, unmatchedIncidents, counters);
+
+        numberOfIncludedRides = output[0];
+        numberOfMatchedIncidents = output[1];
+        numberOfAllRides = output[2];
+        numberOfUnmatchedRideBuckets = output[3];
+
+        /*****************************************************************************************************************/
+
         for (int i = 0; i < unmatchedIncidents.size(); i++) {
             Incident thisIncident = unmatchedIncidents.get(i);
             content.append(leafletMarker(thisIncident.lat,thisIncident.lon,thisIncident.rideName,thisIncident.timestamp));
@@ -168,6 +185,44 @@ public class SegmentMapper {
         logger.info("Number of Segments with at least 1 ride: " + numberOfSegmentsWithRides);
         logger.info("Number of relevant segments: " + numberOfRelevantSegments);
         writeGeoJSON(geoJSONContent.toString(), cla.getJsonOutputFile());
+    }
+
+    private static int[] traverseRideDirectory(List<File> rideFolder, HashMap<String, Segment> segmentMap, Raster raster, CommandLineArguments cla, List<Incident> unmatchedIncidents, int[] counters) {
+
+        /**
+         * Reminder regarding which is which in int[] counters:
+         * numberOfIncludedRides = output[0];
+         * numberOfMatchedIncidents = output[1];
+         * numberOfAllRides = output[2];
+         * numberOfUnmatchedRideBuckets = output[3];
+         */
+
+        for (int i = 0; i < rideFolder.size(); i++) {
+
+            if (rideFolder.get(i).isDirectory()) {
+
+                /** Recursive call on directory */
+
+                counters = traverseRideDirectory(Arrays.asList(rideFolder.get(i).listFiles()), segmentMap, raster, cla, unmatchedIncidents, counters);
+
+            } else {
+
+                Ride ride = new Ride(rideFolder.get(i).getPath(),segmentMap,raster, cla);
+                if ( ride.rideBuckets.size() > 0 && isInBoundingBox(ride.rideBuckets.get(0).lat,ride.rideBuckets.get(0).lon,cla.getBBOX_LATS(),cla.getBBOX_LONS())) {
+                    counters[0]++;
+                    counters[1] += ride.numberOfMatchedIncidents;
+                    unmatchedIncidents.addAll(ride.unmatchedIncidents);
+                }
+                counters[2] ++;
+                ArrayList<RideBucket> unmatchedRideBuckets = ride.getUnmatchedRideBuckets();
+                counters[3] += unmatchedRideBuckets.size();
+
+            }
+
+        }
+
+        return counters;
+
     }
 
     private static boolean hasRide(Segment segment) {
