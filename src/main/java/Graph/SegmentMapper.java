@@ -176,7 +176,7 @@ public class SegmentMapper {
             segmentIndex++;
         }
         // remove trailing comma which occurs if there was not a segment added in the end
-        if (!added) {
+        if (!added && geoJSONContent.length() > 3) {
             // logger.info(geoJSONContent.substring(geoJSONContent.length()-10));
             geoJSONContent.deleteCharAt(geoJSONContent.length()-3);
         }
