@@ -60,7 +60,7 @@ public class SegmentMapper {
 
         /**
          * Required parameters:
-         * - rideFolder (List<File)
+         * - rideFolder (List<File>)
          * - segmentMap (HashMap<String, Segment>), raster (Raster), cla (CommandLineArguments) for Ride constructor
          * - unmatchedIncidents: List<Incident>, don't need to return bc Java is call by value and a List's value is a reference
          * - numberOfIncludedRides: int, for counting - need to return
