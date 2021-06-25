@@ -15,18 +15,33 @@ private val logger = LogManager.getLogger()
 fun getRidesOfRegionAndUNKNOWN(simraRoot: File, region: String): List<File> {
     val regionFolder = File(simraRoot.absolutePath + File.separator + region + File.separator + "Rides")
     check(regionFolder.exists()) { "Folder for $region does not exist at $regionFolder" }
-    val regionRides = regionFolder.listFiles()!!.toList()
+    val regionRides = traverseRideDir(regionFolder, mutableListOf<File>())
     check(regionRides.isNotEmpty()) { "There are no ride files in region folder ${regionFolder.absolutePath}" }
-
     val unknownFolder = File(simraRoot.absolutePath + File.separator + "UNKNOWN" + File.separator + "Rides")
     val unknownRides = if (unknownFolder.exists()) {
-        unknownFolder.listFiles()!!.toList()
+        traverseRideDir(unknownFolder, mutableListOf<File>())
     } else {
         logger.warn("UKNOWN folder not found at ${unknownFolder.absolutePath}")
         emptyList<File>()
     }
 
     return regionRides + unknownRides
+}
+
+/**
+ * Traverses directory containing ride files, recursively if nested.
+ *
+ * @param rideDir - the directory to traverse
+ * @return rideFiles contained in rideDir
+ */
+fun traverseRideDir(rideDir: File, rideFiles: MutableList<File>): MutableList<File> {
+
+    rideDir.walk().forEach {
+        if (! it.isDirectory) rideFiles.add(it)
+    }
+
+    return rideFiles
+
 }
 
 /**
@@ -45,4 +60,18 @@ fun getTrueWithChance(chance: Int): Boolean {
     }
     val random = nextInt(100) + 1 // not 0
     return random <= chance
+}
+
+/**
+ * Determine if output files already exist for a region.
+ * @param region - the region of interest
+ * @param outputDir - the location of output files
+ * @return true, if geoJSON & meta file already exist for this region
+ */
+
+fun outputExistent(region: String, outputDir: File): Boolean {
+
+    val filesInOutDir = outputDir.listFiles()!!.toList()
+            .map { it.toString() }
+    return filesInOutDir.contains("${region}.json") && filesInOutDir.contains("${region}-meta.json")
 }

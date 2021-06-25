@@ -8,6 +8,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
@@ -60,7 +61,7 @@ class CommandLineArguments(parser: ArgParser) {
         }
 
     val scarinessFactor by parser
-        .storing("--scaryFactor", help = "scaryness factor to increases the weight of scary incidents") {
+        .storing("--scaryFactor", help = "scaryness factor to increase the weight of scary incidents") {
             this.toDouble()
         }.default(4.4)
 
@@ -139,6 +140,8 @@ class CommandLineArguments(parser: ArgParser) {
 
         val today = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(todays_date)
 
+        val exactTimeStamp = LocalDateTime.now()
+
         /** Grab centroid from meta file */
 
         val jsonO = JSONObject(osmMetaFile.readLines().joinToString(""))
@@ -157,6 +160,7 @@ class CommandLineArguments(parser: ArgParser) {
             meta_all.put("regionTitle", "SimRa Analysekarte für $region")
             meta_all.put("regionDescription", "Für $region werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die <b>mindestens 1 Fahrt</b> vorliegt.")
             meta_all.put("regionDate", "Karte generiert am $today")
+            meta_all.put("timeStamp", exactTimeStamp)
 
             meta_all.put("mapView", centroid)
             meta_all.put("mapZoom", 12)
@@ -176,6 +180,7 @@ class CommandLineArguments(parser: ArgParser) {
             meta_standard.put("regionTitle", "SimRa Analysekarte für $region")
             meta_standard.put("regionDescription", "Für $region werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die entweder a) <b>mindestens $relevanceThresholdRideCount Fahrten</b> oder b) <b>mindestens $relevanceThresholdScoreRideCount Fahrten und ein Gefahrenscore von $relevanceThresholdScore</b> oder mehr vorliegen.")
             meta_standard.put("regionDate", "Karte generiert am $today")
+            meta_standard.put("timeStamp", exactTimeStamp)
 
             meta_standard.put("mapView",centroid)
             meta_standard.put("mapZoom", 12)
