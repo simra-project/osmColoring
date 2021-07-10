@@ -58,6 +58,8 @@ public class Ride {
                         unmatchedIncidents.add(new Incident(Double.valueOf(lineArray[1]), Double.valueOf(lineArray[2]), Long.valueOf(lineArray[3]), Integer.valueOf(lineArray[4]), lineArray[5].equals("1"), lineArray[6].equals("1"), Integer.valueOf(lineArray[7]), Integer.valueOf(lineArray[8]), lineArray[9].equals("1"), lineArray[10].equals("1"), lineArray[11].equals("1"), lineArray[12].equals("1"), lineArray[13].equals("1"), lineArray[14].equals("1"), lineArray[15].equals("1"), lineArray[16].equals("1"), lineArray[17].equals("1"), lineArray[18].equals("1"), lineArray[19], lineArray[20].equals("1"), Paths.get(pathToRide).getFileName().toString()));
                     } catch (ArrayIndexOutOfBoundsException e) {
                         unmatchedIncidents.add(new Incident(Double.valueOf(lineArray[1]), Double.valueOf(lineArray[2]), Long.valueOf(lineArray[3]), Integer.valueOf(lineArray[4]), lineArray[5].equals("1"), lineArray[6].equals("1"), Integer.valueOf(lineArray[7]), Integer.valueOf(lineArray[8]), lineArray[9].equals("1"), lineArray[10].equals("1"), lineArray[11].equals("1"), lineArray[12].equals("1"), lineArray[13].equals("1"), lineArray[14].equals("1"), lineArray[15].equals("1"), lineArray[16].equals("1"), lineArray[17].equals("1"), lineArray[18].equals("1"), lineArray[19], false, Paths.get(pathToRide).getFileName().toString()));
+                    } catch (NumberFormatException nEx) {
+                        System.out.println("Numberformatexception in file " + pathToRide + line);
                     }
                     // add rideBucket
                 } else if (!incidentPart) {

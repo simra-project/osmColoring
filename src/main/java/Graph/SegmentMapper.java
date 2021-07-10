@@ -43,7 +43,7 @@ public class SegmentMapper {
         List <Junction> junctionList = new ArrayList<>();
 
         // Contains the ride files of specified region.
-        List<File> rideFolder = getRidesOfRegionAndUNKNOWN(cla.getSimraRoot(), cla.getRegion());
+        List<File> rideFolder = getRidesOfRegionAndUNKNOWN(cla.getSimraRoot(), cla.getRegion(), cla.getOutputDir());
         StringBuilder content = new StringBuilder();
         int numberOfUnmatchedRideBuckets = 0;
         int numberOfAllRides = 0;

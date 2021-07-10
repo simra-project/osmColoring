@@ -9,6 +9,7 @@ import org.json.JSONObject
 import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
@@ -19,7 +20,7 @@ class CommandLineArguments(parser: ArgParser) {
 
     val simraRoot by parser
         .storing("-s", "--simraRoot", help = "path to the SimRa dataset root") { File(this) }
-        .default(File("./simra_data"))
+        .default(File("../simra_data"))
         .addValidator {
             if (!value.exists()) {
                 throw InvalidArgumentException("${value.absolutePath} does not exist")
@@ -92,7 +93,10 @@ class CommandLineArguments(parser: ArgParser) {
         .default(true)
 
     // Specify name of JSON output file depending on relevanceThresholdRideCount (= minRides)
-    val jsonOutputFile = if (relevanceThresholdRideCount == 1) File("$outputDir/${region}_all.json") else File("$outputDir/$region.json")
+
+    val jsonOutputFileSupp = if (outputExistent(region, File(outputDir))) "_newRides" else ""
+
+    val jsonOutputFile = if (relevanceThresholdRideCount == 1) File("$outputDir/${region}${jsonOutputFileSupp}_all.json") else File("$outputDir/$region${jsonOutputFileSupp}.json")
 
     val osmJunctionFile = File(osmDataDir).listFiles()!!.filter { it.name.startsWith("${region}_junctions") }.first()
     val osmSegmentsFile = File(osmDataDir).listFiles()!!.filter { it.name.startsWith("${region}_segments") }.first()
@@ -134,13 +138,17 @@ class CommandLineArguments(parser: ArgParser) {
 
     fun toMetaFile(): Unit {
 
+        /** Is output already existent? */
+
+        val allRides = relevanceThresholdRideCount == 1
+
+        val outputExistent = outputExistent(region, File(outputDir), allRides)
+
         /** Get current date */
 
-        val todays_date = LocalDate.now()
+        val today = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(LocalDate.now())
 
-        val today = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(todays_date)
-
-        val exactTimeStamp = LocalDateTime.now()
+        val milliseconds = System.currentTimeMillis()
 
         /** Grab centroid from meta file */
 
@@ -160,12 +168,12 @@ class CommandLineArguments(parser: ArgParser) {
             meta_all.put("regionTitle", "SimRa Analysekarte für $region")
             meta_all.put("regionDescription", "Für $region werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die <b>mindestens 1 Fahrt</b> vorliegt.")
             meta_all.put("regionDate", "Karte generiert am $today")
-            meta_all.put("timeStamp", exactTimeStamp)
+            meta_all.put("timeStamp", milliseconds)
 
             meta_all.put("mapView", centroid)
             meta_all.put("mapZoom", 12)
 
-            val meta_file_all = "$outputDir/${region}_all-meta.json"
+            val meta_file_all = if (outputExistent) "$outputDir/${region}_newRides_all-meta.json" else "$outputDir/${region}_all-meta.json"
             val all_meta_file = File(meta_file_all)
 
             all_meta_file.writeText(meta_all.toString(2))
@@ -180,12 +188,12 @@ class CommandLineArguments(parser: ArgParser) {
             meta_standard.put("regionTitle", "SimRa Analysekarte für $region")
             meta_standard.put("regionDescription", "Für $region werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die entweder a) <b>mindestens $relevanceThresholdRideCount Fahrten</b> oder b) <b>mindestens $relevanceThresholdScoreRideCount Fahrten und ein Gefahrenscore von $relevanceThresholdScore</b> oder mehr vorliegen.")
             meta_standard.put("regionDate", "Karte generiert am $today")
-            meta_standard.put("timeStamp", exactTimeStamp)
+            meta_standard.put("timeStamp", milliseconds)
 
             meta_standard.put("mapView",centroid)
             meta_standard.put("mapZoom", 12)
 
-            val meta_file_standard = "$outputDir/$region-meta.json"
+            val meta_file_standard = if (outputExistent) "$outputDir/${region}_newRides-meta.json" else "$outputDir/$region-meta.json"
             val standard_meta_file = File(meta_file_standard)
 
             standard_meta_file.writeText(meta_standard.toString(2))
