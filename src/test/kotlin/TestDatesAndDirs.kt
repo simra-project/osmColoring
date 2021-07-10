@@ -1,8 +1,6 @@
 import org.json.JSONObject
 import org.junit.Test
 import java.io.File
-import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -13,9 +11,9 @@ class TestDatesAndDirs {
 
     val outputDir = File("output_data/")
 
-    val simraDataDir = File("/Users/theresatratzmuller/Documents/Code.nosync/SimRa/simra_data")
-
     val region = "Hannover"
+
+    val simraDataDir = File("/Users/theresatratzmuller/Documents/Code.nosync/SimRa/simra_data/${region}/Rides")
 
     fun localDateFromMillis(timeStamp: Long): LocalDate {
 
@@ -104,6 +102,8 @@ class TestDatesAndDirs {
         /** Get eligible dirs */
         val dirsToTraverse = getDirs()
 
+        println(dirsToTraverse)
+
         /** Set up list for storing recent files */
 
         var rideFiles =  mutableListOf<File>()
@@ -113,6 +113,7 @@ class TestDatesAndDirs {
 
             /** Now only grab new files */
             dir.walk().forEach {
+                println(it.name)
                 if (! it.isDirectory && (it.lastModified() > timeStamp)) rideFiles.add(it)
             }
 

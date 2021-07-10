@@ -1,13 +1,12 @@
 package main
 
 import org.apache.logging.log4j.LogManager
-import org.json.JSONObject
 import java.io.File
-import java.text.DateFormat
-import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.*
 import kotlin.random.Random.Default.nextInt
-
 
 private val logger = LogManager.getLogger()
 
@@ -57,40 +56,14 @@ fun traverseRideDir(rideDir: File, rideFiles: MutableList<File>): MutableList<Fi
 }
 
 /**
- * Traverses directory containing ride files, recursively if nested.
- * Only add rides that are more recent than timestamp of last computation per meta file.
- *
- * @param rideDir - the directory to traverse
- * @return rideFiles contained in rideDir
+ * Converts a timestamp in milliseconds (Long) to a LocalDate.
  */
-fun findNewRides(rideDir: File, outputDir: File, region: String, rideFiles: MutableList<File>): MutableList<File> {
 
-    /** Read timestamp of last computation from meta file */
-    val regionMetaFile = outputDir.listFiles()!!.filter { it.name.startsWith("${region}-meta") }.first()
-    val jsonO = JSONObject(regionMetaFile.readLines().joinToString(""))
+fun localDateFromMillis(timeStamp: Long): LocalDate {
 
-    if (jsonO.has("timeStamp")) {
-
-        val timeStamp = jsonO.getLong("timeStamp")
-
-        /** Don't look in each folder! Only the one corresponding to the respective timestamp & all 'later' ones. */
-        /** But support the older model where there was no such file structure. */
-
-        /** Define a date format: e.g. 2021/07 */
-        var yearMonthFormat: DateFormat? = SimpleDateFormat("yyyy/MM")
-
-        /** Convert */
-        val timeStampMonthYear = Date(timeStamp)
-
-        /** Now only grab new files */
-        rideDir.walk().forEach {
-            if (! it.isDirectory && (it.lastModified() > timeStamp)) rideFiles.add(it)
-        }
-        return rideFiles
-    } else {
-        /** Meta file doesn't contain timestamp, fall back to standard (non-incremental) method */
-        return traverseRideDir(rideDir, rideFiles)
-    }
+    return Instant.ofEpochMilli(timeStamp)
+            .atZone(ZoneId.of("UTC"))
+            .toLocalDate()
 }
 
 /**
@@ -134,15 +107,5 @@ fun outputExistent(region: String, outputDir: File, all: Boolean = false): Boole
         logger.info("No output data found.")
         return false
     }
-}
-
-fun mergeFiles(region: String, outputDir: File, all: Boolean = false): Unit {
-
-    // iterate over "${region}.json"/"${region}_all.json" &
-    // "${region}_newRides.json"/"${region}_all_newRides.json"
-    // & combine them
-
-    // then delete "${region}_newRides.json"/"${region}_all_newRides.json"
-
 }
 
