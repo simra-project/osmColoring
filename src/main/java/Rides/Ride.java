@@ -8,10 +8,8 @@ import main.CommandLineArguments;
 
 import java.awt.geom.Path2D;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,6 +20,30 @@ public class Ride {
     public List<Incident> matchedIncidents = new ArrayList<>();
     public int numberOfMatchedIncidents = 0;
     private List<RideBucket> unmatchedRideBuckets = new ArrayList<>();
+
+    /**
+     * @param lineArray
+     * @return Incident with the properties found in lineArray; using placeholder values in case of missing data
+     */
+    public Incident parseIncident(String[] lineArray, String pathToRide, boolean arrOutOfBounds) {
+
+        double lat = lineArray[1].equals("") ? 0.0 : Double.valueOf(lineArray[1]);
+
+        double lon = lineArray[2].equals("") ? 0.0 : Double.valueOf(lineArray[2]);
+
+        long timestamp = lineArray[3].equals("") ? 0L : Long.valueOf(lineArray[3]);
+
+        int bike = lineArray[4].equals("") ? 0 : Integer.valueOf(lineArray[4]);
+
+        int phoneLocation = lineArray[7].equals("") ? 0 : Integer.valueOf(lineArray[7]);
+
+        int incident = lineArray[8].equals("") ? 0 : Integer.valueOf(lineArray[8]);
+
+        boolean i10 = arrOutOfBounds ? false : lineArray[20].equals("1");
+
+        return new Incident(lat, lon, timestamp, bike, lineArray[5].equals("1"), lineArray[6].equals("1"), phoneLocation, incident, lineArray[9].equals("1"), lineArray[10].equals("1"), lineArray[11].equals("1"), lineArray[12].equals("1"), lineArray[13].equals("1"), lineArray[14].equals("1"), lineArray[15].equals("1"), lineArray[16].equals("1"), lineArray[17].equals("1"), lineArray[18].equals("1"), lineArray[19], i10, Paths.get(pathToRide).getFileName().toString());
+
+    }
 
     public Ride(String pathToRide, HashMap<String, Segment> segmentMap, Raster raster, CommandLineArguments cla) {
 
@@ -55,9 +77,9 @@ public class Ride {
                         continue;
                     }
                     try {
-                        unmatchedIncidents.add(new Incident(Double.valueOf(lineArray[1]), Double.valueOf(lineArray[2]), Long.valueOf(lineArray[3]), Integer.valueOf(lineArray[4]), lineArray[5].equals("1"), lineArray[6].equals("1"), Integer.valueOf(lineArray[7]), Integer.valueOf(lineArray[8]), lineArray[9].equals("1"), lineArray[10].equals("1"), lineArray[11].equals("1"), lineArray[12].equals("1"), lineArray[13].equals("1"), lineArray[14].equals("1"), lineArray[15].equals("1"), lineArray[16].equals("1"), lineArray[17].equals("1"), lineArray[18].equals("1"), lineArray[19], lineArray[20].equals("1"), Paths.get(pathToRide).getFileName().toString()));
+                        unmatchedIncidents.add(parseIncident(lineArray, pathToRide, false));
                     } catch (ArrayIndexOutOfBoundsException e) {
-                        unmatchedIncidents.add(new Incident(Double.valueOf(lineArray[1]), Double.valueOf(lineArray[2]), Long.valueOf(lineArray[3]), Integer.valueOf(lineArray[4]), lineArray[5].equals("1"), lineArray[6].equals("1"), Integer.valueOf(lineArray[7]), Integer.valueOf(lineArray[8]), lineArray[9].equals("1"), lineArray[10].equals("1"), lineArray[11].equals("1"), lineArray[12].equals("1"), lineArray[13].equals("1"), lineArray[14].equals("1"), lineArray[15].equals("1"), lineArray[16].equals("1"), lineArray[17].equals("1"), lineArray[18].equals("1"), lineArray[19], false, Paths.get(pathToRide).getFileName().toString()));
+                        unmatchedIncidents.add(parseIncident(lineArray, pathToRide, true));
                     }
                     // add rideBucket
                 } else if (!incidentPart) {
