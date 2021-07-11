@@ -88,7 +88,7 @@ fun getTrueWithChance(chance: Int): Boolean {
  * Determine if output files already exist for a region.
  * @param region - the region of interest
  * @param outputDir - the location of output files
- * @return true, if geoJSON & meta file already exist for this region
+ * @return true, if geoJSON & meta file already exist for this region; false otherwise
  */
 
 fun outputExistent(region: String, outputDir: File, all: Boolean = false): Boolean {

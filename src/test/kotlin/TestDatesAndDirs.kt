@@ -1,6 +1,10 @@
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.geojson.FeatureCollection
 import org.json.JSONObject
 import org.junit.Test
 import java.io.File
+import java.io.FileInputStream
+import java.io.InputStream
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -122,6 +126,60 @@ class TestDatesAndDirs {
         val mappedRides = rideFiles.map { yMDFormat.format(localDateFromMillis(it.lastModified())) }
 
         print(mappedRides)
+
+    }
+
+    /**
+     * Test reading json from file and merging data
+     */
+    @Test
+    fun mergeFiles(): Unit {
+
+        val outputDir = File("output_data/")
+
+        val region = "Hannover"
+
+        /** Merge them */
+
+        var oldRideData: InputStream? = FileInputStream(outputDir.absolutePath + "/${region}.json")
+
+        var newRideData: InputStream? = FileInputStream(outputDir.absolutePath + "/${region}_newRides.json")
+
+        if (oldRideData == null || newRideData == null) {
+
+            println("Either new or old ride data file couldn't be found!")
+
+            return
+
+        }
+
+        val oldDatafeatureCollection: FeatureCollection = ObjectMapper().readValue(oldRideData, FeatureCollection::class.java)
+
+        val newDatafeatureCollection: FeatureCollection = ObjectMapper().readValue(newRideData, FeatureCollection::class.java)
+
+        for (newFeature in newDatafeatureCollection) {
+
+            val newId = newFeature.id
+
+            for (oldFeature in oldDatafeatureCollection) {
+
+                if (oldFeature.id == newId) {
+
+                    var oldScore = oldFeature.properties["score"]
+
+                    var newScore = newFeature.properties["score"]
+
+                    //oldFeature.properties.replace("score", oldScore, newScore)
+
+                    println("Old score for id ${newId}: ${oldScore}, new score: ${newScore}, updated: ${oldScore + newScore}")
+
+                }
+
+            }
+
+        }
+
+        // then delete "${region}_newRides.json"/"${region}_all_newRides.json"
 
     }
 
