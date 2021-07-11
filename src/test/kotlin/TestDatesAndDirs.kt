@@ -171,7 +171,7 @@ class TestDatesAndDirs {
 
                     //oldFeature.properties.replace("score", oldScore, newScore)
 
-                    println("Old score for id ${newId}: ${oldScore}, new score: ${newScore}, updated: ${oldScore + newScore}")
+                    //println("Old score for id ${newId}: ${oldScore}, new score: ${newScore}, updated: ${oldScore + newScore}")
 
                 }
 
