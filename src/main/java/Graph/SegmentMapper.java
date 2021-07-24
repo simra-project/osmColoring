@@ -55,7 +55,7 @@ public class SegmentMapper {
         StringBuilder geoJSONContent = new StringBuilder();
         for (int i = 0; i < rideFolder.size(); i++) {
             Ride ride = new Ride(rideFolder.get(i).getPath(),segmentMap,raster, cla);
-            if ( ride.rideBuckets.size() > 0 && isInBoundingBox(ride.rideBuckets.get(0).lat,ride.rideBuckets.get(0).lon,cla.getBBOX_LATS(),cla.getBBOX_LONS())) {
+            if ( ride.rideBuckets.size() > 0 && isInBoundingBox(ride.rideBuckets.get(0).lat,ride.rideBuckets.get(0).lon,cla.getBBOX_LATS(),cla.getBBOX_LONS()) && ride.isBikeRide) {
                 numberOfIncludedRides++;
                 numberOfMatchedIncidents += ride.numberOfMatchedIncidents;
                 unmatchedIncidents.addAll(ride.unmatchedIncidents);

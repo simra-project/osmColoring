@@ -9,9 +9,7 @@ import main.CommandLineArguments;
 import java.awt.geom.Path2D;
 import java.io.*;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class Ride {
 
@@ -20,7 +18,8 @@ public class Ride {
     public List<Incident> matchedIncidents = new ArrayList<>();
     public int numberOfMatchedIncidents = 0;
     private List<RideBucket> unmatchedRideBuckets = new ArrayList<>();
-
+    public boolean isBikeRide = true; // false if the last three speed values' average is >= 50 km/h.
+    private Queue<Float> lastThreeSpeeds = new LinkedList<>();
     /**
      * @param lineArray
      * @return Incident with the properties found in lineArray; using placeholder values in case of missing data
@@ -76,6 +75,13 @@ public class Ride {
                     if (line.endsWith(",,,,,") || line.length()<6 || lineArray[8].equals("0")||lineArray[8].equals("") || lineArray[8].equals("-5")) {
                         continue;
                     }
+                    // System.out.println((lineArray[4].length() == 0) + " " + (lineArray[7].length() == 0));
+                    if (lineArray[4].length() == 0) {
+                        lineArray[4] = "0";
+                    }
+                    if (lineArray[7].length() == 0) {
+                        lineArray[7] = "0";
+                    }
                     try {
                         unmatchedIncidents.add(parseIncident(lineArray, pathToRide, false));
                     } catch (ArrayIndexOutOfBoundsException e) {
@@ -88,6 +94,22 @@ public class Ride {
                         String[] lineArray = line.split(",",-1);
                         List<Segment> visitedSegments = new ArrayList<>();
                         thisRideBucket = new RideBucket(Double.valueOf(lineArray[0]),Double.valueOf(lineArray[1]),Long.valueOf(lineArray[5]),segmentMap,raster, (ArrayList<Segment>) visitedSegments, pathToRide, this);
+
+                        // Checks if the last three speed readings' average is >= 50 km/h. If yes, this ride is probably
+                        // not a bike ride and is flagged to be not included in the osm map
+                        if (lastThreeSpeeds.size() < 3) {
+                            if (lastRideBucket != null) {
+                                lastThreeSpeeds.add(calculateSpeed(lastRideBucket, thisRideBucket));
+                            }
+                        }
+                        if (lastThreeSpeeds.size() == 3) {
+                            if (computeAverage(lastThreeSpeeds) >= 50) {
+                                isBikeRide = false;
+                                break;
+                            }
+                            lastThreeSpeeds.poll();
+                        }
+
                         if (!thisRideBucket.matchedToSegment && isInBoundingBox(thisRideBucket.lat,thisRideBucket.lon,cla.getBBOX_LATS(),cla.getBBOX_LONS())) {
                             unmatchedRideBuckets.add(thisRideBucket);
                         }
@@ -234,5 +256,21 @@ public class Ride {
                 unmatchedIncidents.remove(i);
             }
         }
+    }
+    private float calculateSpeed(RideBucket lastRideBucket, RideBucket thisRideBucket) {
+        long lastTS = lastRideBucket.timestamp;
+        long thisTS = thisRideBucket.timestamp;
+        Location lastLocation = new Location(lastRideBucket.lat,lastRideBucket.lon);
+        Location thisLocation = new Location(thisRideBucket.lat,thisRideBucket.lon);
+        double distance = lastLocation.distanceTo(thisLocation) / 1000; //distance in km
+        double duration = ((double) (thisTS - lastTS))/1000/60/60; // duration in h
+        return (float) (distance/duration); // speed in km/h
+    }
+    private float computeAverage(Collection<Float> myVals) {
+        float sum = 0;
+        for (float f : myVals) {
+            sum += f;
+        }
+        return sum / myVals.size();
     }
 }
