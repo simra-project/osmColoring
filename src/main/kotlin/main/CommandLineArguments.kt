@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -35,9 +36,17 @@ class CommandLineArguments(parser: ArgParser) {
         .addValidator {
             require(value != "UNDEFINED") { "You must supply a region with -r " }
 
-            require(simraRoot.listFiles()!!.toList().map { it.nameWithoutExtension }.contains(value)) {
+            require(simraRoot.listFiles()!!.toList().map { it.nameWithoutExtension.lowercase() }.contains(value.lowercase())) {
                 "SimRa root folder ${simraRoot.absolutePath} does not contain region $value"
             }
+        }
+
+    val regionList by parser
+        .storing("-l", "--regionList", help = "SimRa region list to parse")
+        .default("simRa_regions_coords_ID.config")
+        .addValidator {
+            require(File(value).isFile) { "$value is not a file" }
+            require(File(value).exists()) { "$value does not exist" }
         }
 
     val outputDir by parser
@@ -94,9 +103,9 @@ class CommandLineArguments(parser: ArgParser) {
     // Specify name of JSON output file depending on relevanceThresholdRideCount (= minRides)
     val jsonOutputFile = if (relevanceThresholdRideCount == 1) File("$outputDir/${region}_all.json") else File("$outputDir/$region.json")
 
-    val osmJunctionFile = File(osmDataDir).listFiles()!!.filter { it.name.startsWith("${region}_junctions") }.first()
-    val osmSegmentsFile = File(osmDataDir).listFiles()!!.filter { it.name.startsWith("${region}_segments") }.first()
-    val osmMetaFile = File(osmDataDir).listFiles()!!.filter { it.name.startsWith("${region}_meta") }.first()
+    val osmJunctionFile = File(osmDataDir).listFiles()!!.filter { it.name.lowercase().startsWith("${region.lowercase()}_junctions") }.last()
+    val osmSegmentsFile = File(osmDataDir).listFiles()!!.filter { it.name.lowercase().startsWith("${region.lowercase()}_segments") }.last()
+    val osmMetaFile = File(osmDataDir).listFiles()!!.filter { it.name.lowercase().startsWith("${region.lowercase()}_meta") }.last()
 
     init {
         require(osmJunctionFile.exists()) { "${osmJunctionFile.absolutePath} does not exist" }
@@ -124,9 +133,6 @@ class CommandLineArguments(parser: ArgParser) {
         val BBOX_LATS = listOf(south, south, north, north).toTypedArray()
         val BBOX_LONS = listOf(west, east, east, west).toTypedArray()
 
-        logger.debug("BBOX_LATS: $BBOX_LATS")
-        logger.debug("BBOX_LONS: $BBOX_LONS")
-
         return Pair(BBOX_LATS, BBOX_LONS)
     }
 
@@ -146,6 +152,7 @@ class CommandLineArguments(parser: ArgParser) {
 
         val jsonO = JSONObject(osmMetaFile.readLines().joinToString(""))
         val centroid = jsonO["centroid"]
+        val longRegionName = readLongRegionName()
 
         /** Output '{region}_all-meta.json' if relevanceThresholdRideCount (= minRides)
          * equals 1, else '{region}-meta.json'*/
@@ -157,8 +164,8 @@ class CommandLineArguments(parser: ArgParser) {
              *************************************************************************************/
 
             val meta_all = JSONObject()
-            meta_all.put("regionTitle", "SimRa Analysekarte für $region")
-            meta_all.put("regionDescription", "Für $region werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die <b>mindestens 1 Fahrt</b> vorliegt.")
+            meta_all.put("regionTitle", "SimRa Analysekarte für $longRegionName")
+            meta_all.put("regionDescription", "Für $longRegionName werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die <b>mindestens 1 Fahrt</b> vorliegt.")
             meta_all.put("regionDate", "Karte generiert am $today")
             meta_all.put("timeStamp", exactTimeStamp)
 
@@ -177,8 +184,8 @@ class CommandLineArguments(parser: ArgParser) {
              *************************************************************************************/
 
             val meta_standard = JSONObject()
-            meta_standard.put("regionTitle", "SimRa Analysekarte für $region")
-            meta_standard.put("regionDescription", "Für $region werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die entweder a) <b>mindestens $relevanceThresholdRideCount Fahrten</b> oder b) <b>mindestens $relevanceThresholdScoreRideCount Fahrten und ein Gefahrenscore von $relevanceThresholdScore</b> oder mehr vorliegen.")
+            meta_standard.put("regionTitle", "SimRa Analysekarte für $longRegionName")
+            meta_standard.put("regionDescription", "Für $longRegionName werden Segmente (Straßenabschnitte und Kreuzungen) angezeigt, für die entweder a) <b>mindestens $relevanceThresholdRideCount Fahrten</b> oder b) <b>mindestens $relevanceThresholdScoreRideCount Fahrten und ein Gefahrenscore von $relevanceThresholdScore</b> oder mehr vorliegen.")
             meta_standard.put("regionDate", "Karte generiert am $today")
             meta_standard.put("timeStamp", exactTimeStamp)
 
@@ -191,6 +198,19 @@ class CommandLineArguments(parser: ArgParser) {
             standard_meta_file.writeText(meta_standard.toString(2))
 
         }
+    }
+
+    private fun readLongRegionName(): String {
+        val inputStream: InputStream = File(regionList).inputStream() // read the file
+        inputStream.bufferedReader().useLines { lines -> lines.forEach { line ->
+            if (!line.startsWith("#") && !line.startsWith("Please Choose") && !line.startsWith("!")) {
+                val regionShort = line.split("=")[2]
+                if (regionShort == region) {
+                    return line.split("=")[1]
+                }
+            }
+        } }
+        return region
     }
 
     /*****************************************************************

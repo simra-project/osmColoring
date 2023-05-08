@@ -1,11 +1,10 @@
 package Leaflet;
 
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 public class GeoJsonPrinter {
@@ -28,6 +27,7 @@ public class GeoJsonPrinter {
     public static void writeGeoJSON(String content, File outputFile) {
         try {
             String json = geoJSONHead() + content + geoJSONTail();
+            json = new String(json.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
 //            JSONObject jsonObject = new JSONObject(json);
 //            json = jsonObject.toString(1);
 

@@ -8,6 +8,7 @@ import main.CommandLineArguments;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.locationtech.spatial4j.exception.InvalidShapeException;
 
 import java.io.*;
 import java.util.*;
@@ -108,58 +109,62 @@ public class SegmentImporter {
             // Skip header id|lats|lons|highwayName|highwaytype|highwaylanes|poly_vertices_lats|poly_vertices_lons
             String line = br.readLine();
             while ((line = br.readLine()) != null) {
-                String[] streetsLineArray = line.split("\\|",-1);
-                String id =  streetsLineArray[1] + ".0";
-                String highwayname = streetsLineArray[2].split(",",-1)[0].replaceAll("\"","");
-                String[] highWayTypesArray = {streetsLineArray[3]};
-                double highwaylanes = -1;
-                if (streetsLineArray[4].length()==1) {
-                    highwaylanes = Double.valueOf(streetsLineArray[4]);
-                } else if (streetsLineArray[4].length()>1 && !streetsLineArray[4].contains("u")) {
-                    highwaylanes = Double.valueOf(streetsLineArray[4].split(",")[0]);
-                }
-
-                String[] lanes_BackwardStrings = streetsLineArray[5]
-                        .replace("unknown","")
-                        .replace("[","")
-                        .replace("}","")
-                        .split(", ",-1);
-                double[] lanes_Backward = new double[lanes_BackwardStrings.length];
-                for (int i = 0; i < lanes_BackwardStrings.length; i++) {
-                    if (lanes_BackwardStrings[i].length()>0) {
-                        lanes_Backward[i] = Double.valueOf(lanes_BackwardStrings[i]);
+                try {
+                    String[] streetsLineArray = line.replaceAll(" \\| "," \\ ").split("\\|",-1);
+                    String id =  streetsLineArray[1] + ".0";
+                    String highwayname = streetsLineArray[2].split(",",-1)[0].replaceAll("\"","");
+                    String[] highWayTypesArray = {streetsLineArray[3]};
+                    double highwaylanes = -1;
+                    if (streetsLineArray[4].length()==1) {
+                        highwaylanes = Double.valueOf(streetsLineArray[4]);
+                    } else if (streetsLineArray[4].length()>1 && !streetsLineArray[4].contains("u") && !streetsLineArray[4].contains("p")) {
+                        highwaylanes = Double.valueOf(streetsLineArray[4].split(",")[0]);
                     }
-                }
-                if (lanes_Backward.length<1) {
-                    lanes_Backward = new double[1];
-                    lanes_Backward[0] = -1;
-                }
-                String[] segment_nodesStrings = streetsLineArray[6]
-                        .replace("[","")
-                        .replace("]","")
-                        .split(", ");
 
-                double seg_length = Double.valueOf(streetsLineArray[7]);
-                String[] poly_vertices_latsStrings = streetsLineArray[9]
-                        .replace("[","")
-                        .replace("]","")
-                        .split(", ");
-                double[] poly_vertices_latsArray = convertStringArrayToDoubleArray(poly_vertices_latsStrings);
-                String[] poly_vertices_lonsStrings = streetsLineArray[10]
-                        .replace("[","")
-                        .replace("]","")
-                        .split(", ");
-                double[] poly_vertices_lonsArray = convertStringArrayToDoubleArray(poly_vertices_lonsStrings);
-                Street streetSegment = new Street(id,highwayname,highWayTypesArray,highwaylanes,lanes_Backward,segment_nodesStrings,seg_length,poly_vertices_latsArray,poly_vertices_lonsArray);
+                    String[] lanes_BackwardStrings = streetsLineArray[5]
+                            .replace("unknown","")
+                            .replace("[","")
+                            .replace("}","")
+                            .split(", ",-1);
+                    double[] lanes_Backward = new double[lanes_BackwardStrings.length];
+                    for (int i = 0; i < lanes_BackwardStrings.length; i++) {
+                        if (lanes_BackwardStrings[i].length()>0) {
+                            lanes_Backward[i] = Double.valueOf(lanes_BackwardStrings[i]);
+                        }
+                    }
+                    if (lanes_Backward.length<1) {
+                        lanes_Backward = new double[1];
+                        lanes_Backward[0] = -1;
+                    }
+                    String[] segment_nodesStrings = streetsLineArray[6]
+                            .replace("[","")
+                            .replace("]","")
+                            .split(", ");
 
-                // linkStreetSegmentToJunction(streetSegment,(HashMap<String, Segment>)segmentMap);
-                int segment_nr = 0;
-                while (segmentMap.containsKey(id)) {
-                    segment_nr++;
-                    id = id.split("\\.")[0] + "." + segment_nr;
+                    double seg_length = Double.valueOf(streetsLineArray[7]);
+                    String[] poly_vertices_latsStrings = streetsLineArray[9]
+                            .replace("[","")
+                            .replace("]","")
+                            .split(", ");
+                    double[] poly_vertices_latsArray = convertStringArrayToDoubleArray(poly_vertices_latsStrings);
+                    String[] poly_vertices_lonsStrings = streetsLineArray[10]
+                            .replace("[","")
+                            .replace("]","")
+                            .split(", ");
+                    double[] poly_vertices_lonsArray = convertStringArrayToDoubleArray(poly_vertices_lonsStrings);
+                    Street streetSegment = new Street(id, highwayname, highWayTypesArray, highwaylanes, lanes_Backward, segment_nodesStrings, seg_length, poly_vertices_latsArray, poly_vertices_lonsArray);
+
+                    // linkStreetSegmentToJunction(streetSegment,(HashMap<String, Segment>)segmentMap);
+                    int segment_nr = 0;
+                    while (segmentMap.containsKey(id)) {
+                        segment_nr++;
+                        id = id.split("\\.")[0] + "." + segment_nr;
+                    }
+                    segmentMap.put(id, streetSegment);
+                    raster.putSubscriptionIdIntoRasterEntries(streetSegment.geofence, new ImmutablePair<>("", id));
+                } catch (InvalidShapeException e) {
+                    e.getLocalizedMessage();
                 }
-                segmentMap.put(id, streetSegment);
-                raster.putSubscriptionIdIntoRasterEntries(streetSegment.geofence, new ImmutablePair<>("", id));
             }
         } catch (IOException e) {
             e.printStackTrace();

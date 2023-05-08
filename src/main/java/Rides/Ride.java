@@ -92,6 +92,9 @@ public class Ride {
                     // skip line if it does not have GPS, or is a header
                     if (!line.startsWith(",,") && !line.contains("#")  && !line.startsWith("lat")) {
                         String[] lineArray = line.split(",",-1);
+                        if(lineArray.length < 7) {
+                            continue;
+                        }
                         List<Segment> visitedSegments = new ArrayList<>();
                         thisRideBucket = new RideBucket(Double.valueOf(lineArray[0]),Double.valueOf(lineArray[1]),Long.valueOf(lineArray[5]),segmentMap,raster, (ArrayList<Segment>) visitedSegments, pathToRide, this);
 
