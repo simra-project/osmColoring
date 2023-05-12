@@ -17,7 +17,7 @@ public class Street extends Segment implements Comparable<Street> {
     public String partOfStreetWithId;
     public String[] segment_nodes;
     public int numberOfRidesSouthWest, numberOfRidesNorthEast, numberOfIncidentsSouthWest, numberOfIncidentsNorthEast, numberOfScaryIncidentsSouthWest, numberOfScaryIncidentsNorthEast, numberOfNonScaryIncidentsSouthWest, numberOfNonScaryIncidentsNorthEast;
-    public int[] scaryIncidentTypesSouthWest = new int[9], scaryIncidentTypesNorthEast = new int[9], nonScaryIncidentTypesSouthWest = new int[9], nonScaryIncidentTypesNorthEast = new int[9];
+    public HashMap<String, Integer> scaryIncidentTypesSouthWest,scaryIncidentTypesNorthEast, nonScaryIncidentTypesSouthWest, nonScaryIncidentTypesNorthEast= new HashMap<>();
     public double[] lanes_backward;
     public double seg_length, scoreSouthWest, scoreNorthEast, score;
 
@@ -38,6 +38,46 @@ public class Street extends Segment implements Comparable<Street> {
             locations.add(new Location(poly_vertices_latsArray[i],poly_vertices_lonsArray[i]));
         }
         this.geofence = Geofence.Companion.polygon(locations);
+        scaryIncidentTypesSouthWest = new HashMap<>();
+        scaryIncidentTypesSouthWest.put("-2",0);
+        scaryIncidentTypesSouthWest.put("1",0);
+        scaryIncidentTypesSouthWest.put("2",0);
+        scaryIncidentTypesSouthWest.put("3",0);
+        scaryIncidentTypesSouthWest.put("4",0);
+        scaryIncidentTypesSouthWest.put("5",0);
+        scaryIncidentTypesSouthWest.put("6",0);
+        scaryIncidentTypesSouthWest.put("7",0);
+        scaryIncidentTypesSouthWest.put("8",0);
+        nonScaryIncidentTypesSouthWest = new HashMap<>();
+        nonScaryIncidentTypesSouthWest.put("-2",0);
+        nonScaryIncidentTypesSouthWest.put("1",0);
+        nonScaryIncidentTypesSouthWest.put("2",0);
+        nonScaryIncidentTypesSouthWest.put("3",0);
+        nonScaryIncidentTypesSouthWest.put("4",0);
+        nonScaryIncidentTypesSouthWest.put("5",0);
+        nonScaryIncidentTypesSouthWest.put("6",0);
+        nonScaryIncidentTypesSouthWest.put("7",0);
+        nonScaryIncidentTypesSouthWest.put("8",0);
+        scaryIncidentTypesNorthEast = new HashMap<>();
+        scaryIncidentTypesNorthEast.put("-2",0);
+        scaryIncidentTypesNorthEast.put("1",0);
+        scaryIncidentTypesNorthEast.put("2",0);
+        scaryIncidentTypesNorthEast.put("3",0);
+        scaryIncidentTypesNorthEast.put("4",0);
+        scaryIncidentTypesNorthEast.put("5",0);
+        scaryIncidentTypesNorthEast.put("6",0);
+        scaryIncidentTypesNorthEast.put("7",0);
+        scaryIncidentTypesNorthEast.put("8",0);
+        nonScaryIncidentTypesNorthEast = new HashMap<>();
+        nonScaryIncidentTypesNorthEast.put("-2",0);
+        nonScaryIncidentTypesNorthEast.put("1",0);
+        nonScaryIncidentTypesNorthEast.put("2",0);
+        nonScaryIncidentTypesNorthEast.put("3",0);
+        nonScaryIncidentTypesNorthEast.put("4",0);
+        nonScaryIncidentTypesNorthEast.put("5",0);
+        nonScaryIncidentTypesNorthEast.put("6",0);
+        nonScaryIncidentTypesNorthEast.put("7",0);
+        nonScaryIncidentTypesNorthEast.put("8",0);
     }
 
     public Double getScore() {
@@ -85,14 +125,14 @@ public class Street extends Segment implements Comparable<Street> {
                 .append(",\n\"rides north east\":").append(numberOfRidesNorthEast)
                 .append(",\n\"incidents north east\":").append((numberOfNonScaryIncidentsNorthEast + numberOfScaryIncidentsNorthEast))
                 .append(",\n\"score north east\":").append(scoreNorthEast)
-                .append(",\n\"clopa\":").append((scaryIncidentTypesSouthWest[1] + nonScaryIncidentTypesSouthWest[1] + scaryIncidentTypesNorthEast[1] + nonScaryIncidentTypesNorthEast[1]))
-                .append(",\n\"spiot\":").append((scaryIncidentTypesSouthWest[2] + nonScaryIncidentTypesSouthWest[2] + scaryIncidentTypesNorthEast[2] + nonScaryIncidentTypesNorthEast[2]))
-                .append(",\n\"nlorh\":").append((scaryIncidentTypesSouthWest[3] + nonScaryIncidentTypesSouthWest[3] + scaryIncidentTypesNorthEast[3] + nonScaryIncidentTypesNorthEast[3]))
-                .append(",\n\"saho\":").append((scaryIncidentTypesSouthWest[4] + nonScaryIncidentTypesSouthWest[4] + scaryIncidentTypesNorthEast[4] + nonScaryIncidentTypesNorthEast[4]))
-                .append(",\n\"tailgating\":").append((scaryIncidentTypesSouthWest[5] + nonScaryIncidentTypesSouthWest[5] + scaryIncidentTypesNorthEast[5] + nonScaryIncidentTypesNorthEast[5]))
-                .append(",\n\"nd\":").append((scaryIncidentTypesSouthWest[6] + nonScaryIncidentTypesSouthWest[6] + scaryIncidentTypesNorthEast[6] + nonScaryIncidentTypesNorthEast[6]))
-                .append(",\n\"dao\":").append((scaryIncidentTypesSouthWest[7] + nonScaryIncidentTypesSouthWest[7] + scaryIncidentTypesNorthEast[7] + nonScaryIncidentTypesNorthEast[7]))
-                .append(",\n\"other\":").append((scaryIncidentTypesSouthWest[8] + nonScaryIncidentTypesSouthWest[8] + scaryIncidentTypesNorthEast[8] + nonScaryIncidentTypesNorthEast[8]))
+                .append(",\n\"clopa\":").append((scaryIncidentTypesSouthWest.get("-2") + nonScaryIncidentTypesSouthWest.get("-2") + scaryIncidentTypesNorthEast.get("-2") + nonScaryIncidentTypesNorthEast.get("-2") + scaryIncidentTypesSouthWest.get("1") + nonScaryIncidentTypesSouthWest.get("1") + scaryIncidentTypesNorthEast.get("1") + nonScaryIncidentTypesNorthEast.get("1")))
+                .append(",\n\"spiot\":").append((scaryIncidentTypesSouthWest.get("2") + nonScaryIncidentTypesSouthWest.get("2") + scaryIncidentTypesNorthEast.get("2") + nonScaryIncidentTypesNorthEast.get("2")))
+                .append(",\n\"nlorh\":").append((scaryIncidentTypesSouthWest.get("3") + nonScaryIncidentTypesSouthWest.get("3") + scaryIncidentTypesNorthEast.get("3") + nonScaryIncidentTypesNorthEast.get("3")))
+                .append(",\n\"saho\":").append((scaryIncidentTypesSouthWest.get("4") + nonScaryIncidentTypesSouthWest.get("4") + scaryIncidentTypesNorthEast.get("4") + nonScaryIncidentTypesNorthEast.get("4")))
+                .append(",\n\"tailgating\":").append((scaryIncidentTypesSouthWest.get("5") + nonScaryIncidentTypesSouthWest.get("5") + scaryIncidentTypesNorthEast.get("5") + nonScaryIncidentTypesNorthEast.get("5")))
+                .append(",\n\"nd\":").append((scaryIncidentTypesSouthWest.get("6") + nonScaryIncidentTypesSouthWest.get("6") + scaryIncidentTypesNorthEast.get("6") + nonScaryIncidentTypesNorthEast.get("6")))
+                .append(",\n\"dao\":").append((scaryIncidentTypesSouthWest.get("7") + nonScaryIncidentTypesSouthWest.get("7") + scaryIncidentTypesNorthEast.get("7") + nonScaryIncidentTypesNorthEast.get("7")))
+                .append(",\n\"other\":").append((scaryIncidentTypesSouthWest.get("8") + nonScaryIncidentTypesSouthWest.get("8") + scaryIncidentTypesNorthEast.get("8") + nonScaryIncidentTypesNorthEast.get("8")))
                 .append(super.toGeoJson())
                 .append("},\n\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[");
 

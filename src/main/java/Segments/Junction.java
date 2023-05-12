@@ -10,7 +10,7 @@ import static Config.Config.*;
 
 public class Junction extends Segment implements Comparable<Junction> {
     public int numberOfRides, numberOfIncidents, numberOfScaryIncidents, numberOfNonScaryIncidents;
-    public int[] scaryIncidentTypes = new int[9], nonScaryIncidentTypes = new int[9];
+    public HashMap<String, Integer> scaryIncidentTypes, nonScaryIncidentTypes = new HashMap<>();
     public double[] lanes_bw;
     public double dangerousnessScore;
 
@@ -31,6 +31,26 @@ public class Junction extends Segment implements Comparable<Junction> {
             locations.add(new Location(polyLats[i],polyLons[i]));
         }
         this.geofence = Geofence.Companion.polygon(locations);
+        scaryIncidentTypes = new HashMap<>();
+        scaryIncidentTypes.put("-2",0);
+        scaryIncidentTypes.put("1",0);
+        scaryIncidentTypes.put("2",0);
+        scaryIncidentTypes.put("3",0);
+        scaryIncidentTypes.put("4",0);
+        scaryIncidentTypes.put("5",0);
+        scaryIncidentTypes.put("6",0);
+        scaryIncidentTypes.put("7",0);
+        scaryIncidentTypes.put("8",0);
+        nonScaryIncidentTypes = new HashMap<>();
+        nonScaryIncidentTypes.put("-2",0);
+        nonScaryIncidentTypes.put("1",0);
+        nonScaryIncidentTypes.put("2",0);
+        nonScaryIncidentTypes.put("3",0);
+        nonScaryIncidentTypes.put("4",0);
+        nonScaryIncidentTypes.put("5",0);
+        nonScaryIncidentTypes.put("6",0);
+        nonScaryIncidentTypes.put("7",0);
+        nonScaryIncidentTypes.put("8",0);
     }
 
     public Double getScore() {
@@ -69,14 +89,14 @@ public class Junction extends Segment implements Comparable<Junction> {
                 .append("\n\"score\":").append(getScore())
                 .append(",\n\"incidents\":").append((numberOfNonScaryIncidents + numberOfScaryIncidents))
                 .append(",\n\"rides\":").append(numberOfRides)
-                .append(",\n\"clopa\":").append((nonScaryIncidentTypes[1] + scaryIncidentTypes[1]))
-                .append(",\n\"spiot\":").append((nonScaryIncidentTypes[2] + scaryIncidentTypes[2]))
-                .append(",\n\"nlorh\":").append((nonScaryIncidentTypes[3] + scaryIncidentTypes[3]))
-                .append(",\n\"ssho\":").append((nonScaryIncidentTypes[4] + scaryIncidentTypes[4]))
-                .append(",\n\"tailgating\":").append((nonScaryIncidentTypes[5] + scaryIncidentTypes[5]))
-                .append(",\n\"near-dooring\":").append((nonScaryIncidentTypes[6] + scaryIncidentTypes[6]))
-                .append(",\n\"dao\":").append((nonScaryIncidentTypes[7] + scaryIncidentTypes[7]))
-                .append(",\n\"other\":").append((nonScaryIncidentTypes[8] + scaryIncidentTypes[8]))
+                .append(",\n\"clopa\":").append((nonScaryIncidentTypes.get("-2") + scaryIncidentTypes.get("-2") + nonScaryIncidentTypes.get("1") + scaryIncidentTypes.get("1")))
+                .append(",\n\"spiot\":").append((nonScaryIncidentTypes.get("2") + scaryIncidentTypes.get("2")))
+                .append(",\n\"nlorh\":").append((nonScaryIncidentTypes.get("3") + scaryIncidentTypes.get("3")))
+                .append(",\n\"ssho\":").append((nonScaryIncidentTypes.get("4") + scaryIncidentTypes.get("4")))
+                .append(",\n\"tailgating\":").append((nonScaryIncidentTypes.get("5") + scaryIncidentTypes.get("5")))
+                .append(",\n\"near-dooring\":").append((nonScaryIncidentTypes.get("6") + scaryIncidentTypes.get("6")))
+                .append(",\n\"dao\":").append((nonScaryIncidentTypes.get("7") + scaryIncidentTypes.get("7")))
+                .append(",\n\"other\":").append((nonScaryIncidentTypes.get("8") + scaryIncidentTypes.get("8")))
                 .append(super.toGeoJson())
                 .append("},\n\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[");
 

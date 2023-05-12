@@ -147,9 +147,6 @@ public class Ride {
 
                 }
             }
-            if (rideBuckets.size()==0) {
-                System.out.println("rideBuckets.size()==0: " + pathToRide);
-            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -164,12 +161,17 @@ public class Ride {
             for (int i = 0; i < incidentsOfOneSegment.size(); i++) {
                 Incident thisIncident = incidentsOfOneSegment.get(i);
                 rideBucket.segment.incidents.add(thisIncident);
-                if (thisIncident.scary) {
-                    ((Junction)rideBucket.segment).scaryIncidentTypes[thisIncident.incident]++;
-                    ((Junction)rideBucket.segment).numberOfScaryIncidents++;
-                } else {
-                    ((Junction)rideBucket.segment).nonScaryIncidentTypes[thisIncident.incident]++;
-                    ((Junction)rideBucket.segment).numberOfNonScaryIncidents++;
+                try {
+                    if (thisIncident.scary) {
+                        ((Junction)rideBucket.segment).scaryIncidentTypes.merge(String.valueOf(thisIncident.incident),1,Integer::sum);
+                        ((Junction)rideBucket.segment).numberOfScaryIncidents++;
+                    } else {
+                        ((Junction)rideBucket.segment).nonScaryIncidentTypes.merge(String.valueOf(thisIncident.incident),1,Integer::sum);
+                        ((Junction)rideBucket.segment).numberOfNonScaryIncidents++;
+                    }
+                } catch (ArrayIndexOutOfBoundsException | NullPointerException aioobe) {
+                    aioobe.printStackTrace();
+                    System.exit(1);
                 }
             }
         } else {
@@ -181,10 +183,10 @@ public class Ride {
                         Incident thisIncident = incidentsOfOneSegment.get(i);
                         rideBucket.segment.incidents.add(thisIncident);
                         if (thisIncident.scary) {
-                            ((Street)rideBucket.segment).scaryIncidentTypesSouthWest[thisIncident.incident]++;
+                            ((Street)rideBucket.segment).scaryIncidentTypesSouthWest.merge(String.valueOf(thisIncident.incident),1,Integer::sum);
                             ((Street)rideBucket.segment).numberOfScaryIncidentsSouthWest++;
                         } else {
-                            ((Street)rideBucket.segment).nonScaryIncidentTypesSouthWest[thisIncident.incident]++;
+                            ((Street)rideBucket.segment).nonScaryIncidentTypesSouthWest.merge(String.valueOf(thisIncident.incident),1,Integer::sum);
                             ((Street)rideBucket.segment).numberOfNonScaryIncidentsSouthWest++;
                         }
                     }
@@ -195,11 +197,11 @@ public class Ride {
                         Incident thisIncident = incidentsOfOneSegment.get(i);
                         rideBucket.segment.incidents.add(thisIncident);
                         if (thisIncident.scary) {
-                            ((Street)rideBucket.segment).scaryIncidentTypesNorthEast[thisIncident.incident]++;
+                            ((Street)rideBucket.segment).scaryIncidentTypesNorthEast.merge(String.valueOf(thisIncident.incident),1,Integer::sum);
                             ((Street)rideBucket.segment).numberOfScaryIncidentsNorthEast++;
 
                         } else {
-                            ((Street)rideBucket.segment).nonScaryIncidentTypesNorthEast[thisIncident.incident]++;
+                            ((Street)rideBucket.segment).nonScaryIncidentTypesNorthEast.merge(String.valueOf(thisIncident.incident),1,Integer::sum);
                             ((Street)rideBucket.segment).numberOfNonScaryIncidentsNorthEast++;
                         }
                     }

@@ -12,6 +12,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.util.*
 
 
 private val logger = LogManager.getLogger()
@@ -103,9 +104,9 @@ class CommandLineArguments(parser: ArgParser) {
     // Specify name of JSON output file depending on relevanceThresholdRideCount (= minRides)
     val jsonOutputFile = if (relevanceThresholdRideCount == 1) File("$outputDir/${region}_all.json") else File("$outputDir/$region.json")
 
-    val osmJunctionFile = File(osmDataDir).listFiles()!!.filter { it.name.lowercase().startsWith("${region.lowercase()}_junctions") }.last()
-    val osmSegmentsFile = File(osmDataDir).listFiles()!!.filter { it.name.lowercase().startsWith("${region.lowercase()}_segments") }.last()
-    val osmMetaFile = File(osmDataDir).listFiles()!!.filter { it.name.lowercase().startsWith("${region.lowercase()}_meta") }.last()
+    val osmJunctionFile = File(osmDataDir).listFiles()!!.filter { it.name.lowercase().startsWith("${region.lowercase()}_junctions") }.sorted().last()
+    val osmSegmentsFile = File(osmDataDir).listFiles()!!.filter { it.name.lowercase().startsWith("${region.lowercase()}_segments") }.sorted().last()
+    val osmMetaFile = File(osmDataDir).listFiles()!!.filter { it.name.lowercase().startsWith("${region.lowercase()}_meta") }.sorted().last()
 
     init {
         require(osmJunctionFile.exists()) { "${osmJunctionFile.absolutePath} does not exist" }

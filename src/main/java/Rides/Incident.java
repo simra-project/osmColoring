@@ -1,5 +1,7 @@
 package Rides;
 
+import java.util.HashMap;
+
 public class Incident {
     public double lat, lon;
     public long timestamp;
@@ -50,9 +52,18 @@ public class Incident {
 
     public String getIncidentName() {
         //String[] incidentNames = {"Close Pass", "Someone pulling in or out","Near left or right hook","Someone approaching head on","Tailgating","Near-Dooring","Dodging an obstacle (e.g., a dog)","Other"};
-        String[] incidentNames = {"Zu dichtes Überholen", "Ein- oder ausparkendes Fahrzeug","Beinahe-Abbiegeunfall","Entgegenkommender Verkehrsteilnehmer","Zu dichtes Auffahren","Beinahe-Dooring","Einem Hindernis ausweichen (z.B. Hund)","Sonstiges"};
-
-        return incidentNames[incident-1];
+        String[] incidentNamesArray = {"Zu dichtes Überholen", "Ein- oder ausparkendes Fahrzeug","Beinahe-Abbiegeunfall","Entgegenkommender Verkehrsteilnehmer","Zu dichtes Auffahren","Beinahe-Dooring","Einem Hindernis ausweichen (z.B. Hund)","Sonstiges"};
+        HashMap<String,String> incidentNames = new HashMap<>();
+        incidentNames.put("-2",incidentNamesArray[0]);
+        incidentNames.put("1",incidentNamesArray[0]);
+        incidentNames.put("2",incidentNamesArray[1]);
+        incidentNames.put("3",incidentNamesArray[2]);
+        incidentNames.put("4",incidentNamesArray[3]);
+        incidentNames.put("5",incidentNamesArray[4]);
+        incidentNames.put("6",incidentNamesArray[5]);
+        incidentNames.put("7",incidentNamesArray[6]);
+        incidentNames.put("8",incidentNamesArray[7]);
+        return incidentNames.get(String.valueOf(incident));
     }
 
 
