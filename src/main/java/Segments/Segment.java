@@ -86,4 +86,8 @@ public class Segment {
         result.append("]");
         return result.toString();
     }
+
+    public String toGeoJsonLite() {
+        return "";
+    }
 }

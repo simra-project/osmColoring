@@ -39,4 +39,20 @@ public class GeoJsonPrinter {
         }
 
     }
+
+    public static void writeGeoJSONLite(String content, File outputFile) {
+        try {
+            String json = geoJSONHead() + content + geoJSONTail();
+            json = new String(json.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+//            JSONObject jsonObject = new JSONObject(json);
+//            json = jsonObject.toString(1);
+
+            Files.deleteIfExists(outputFile.toPath());
+            Files.write(outputFile.toPath(), json.getBytes(),
+                    StandardOpenOption.CREATE_NEW);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 }

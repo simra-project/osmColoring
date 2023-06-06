@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SIMRAROOT=./simra_data
+SIMRAROOT=E:\tubCloud\Regions
 ALLSUFFIX=-all
 
 echo "Generating public files"

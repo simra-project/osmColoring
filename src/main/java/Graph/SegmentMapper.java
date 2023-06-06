@@ -49,10 +49,9 @@ public class SegmentMapper {
         int numberOfAllRides = 0;
         int numberOfIncludedRides = 0;
         int numberOfMatchedIncidents = 0;
-        int numberOfUnmatchedIncidents = 0;
         List<Incident> unmatchedIncidents = new ArrayList<>();
-        StringBuilder mapContent = new StringBuilder();
         StringBuilder geoJSONContent = new StringBuilder();
+        StringBuilder geoJSONLiteContent = new StringBuilder();
         for (int i = 0; i < rideFolder.size(); i++) {
             Ride ride = new Ride(rideFolder.get(i).getPath(),segmentMap,raster, cla);
             if ( ride.rideBuckets.size() > 0 && isInBoundingBox(ride.rideBuckets.get(0).lat,ride.rideBuckets.get(0).lon,cla.getBBOX_LATS(),cla.getBBOX_LONS()) && ride.isBikeRide) {
@@ -149,6 +148,7 @@ public class SegmentMapper {
                 streetList.add(street);
             }
             added = addSegmentToGeoJson(segment, geoJSONContent, cla);
+            addSegmentToGeoJsonLite(segment, geoJSONLiteContent, cla);
             if (added && segmentIndex < segmentMap.size() - 1) {
                 // add comma and line breaks since there will be more segments
                 geoJSONContent.append(",\n\n");
@@ -168,6 +168,7 @@ public class SegmentMapper {
         logger.info("Number of Segments with at least 1 ride: " + numberOfSegmentsWithRides);
         logger.info("Number of relevant segments: " + numberOfRelevantSegments);
         writeGeoJSON(geoJSONContent.toString(), cla.getJsonOutputFile());
+        writeGeoJSON(geoJSONLiteContent.toString(), cla.getJsonLiteOutputFile());
     }
 
     private static boolean hasRide(Segment segment) {
@@ -192,7 +193,21 @@ public class SegmentMapper {
         }
         return false;
     }
-
+    private static boolean addSegmentToGeoJsonLite(Segment segment, StringBuilder geoJSONLiteContent,
+                                               CommandLineArguments cla) {
+        if (!cla.getIgnoreIrrelevantSegments()) {
+            geoJSONLiteContent.append(segment.toGeoJsonLite());
+            numberOfRelevantSegments++;
+            return true;
+        } else {
+            if (isRelevant(segment, cla)) {
+                geoJSONLiteContent.append(segment.toGeoJsonLite());
+                numberOfRelevantSegments++;
+                return true;
+            }
+        }
+        return false;
+    }
     public static boolean isRelevant(Segment segment, CommandLineArguments cla) {
         if (segment instanceof Junction) {
             Junction junction = (Junction) segment;

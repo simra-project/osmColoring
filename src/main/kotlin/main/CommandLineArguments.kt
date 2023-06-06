@@ -103,6 +103,7 @@ class CommandLineArguments(parser: ArgParser) {
 
     // Specify name of JSON output file depending on relevanceThresholdRideCount (= minRides)
     val jsonOutputFile = if (relevanceThresholdRideCount == 1) File("$outputDir/${region}_all.json") else File("$outputDir/$region.json")
+    val jsonLiteOutputFile = if (relevanceThresholdRideCount == 1) File("$outputDir/${region}_all_lite.json") else File("$outputDir/${region}_lite.json")
 
     val osmJunctionFile = File(osmDataDir).listFiles()!!.filter { it.name.lowercase().startsWith("${region.lowercase()}_junctions") }.sorted().last()
     val osmSegmentsFile = File(osmDataDir).listFiles()!!.filter { it.name.lowercase().startsWith("${region.lowercase()}_segments") }.sorted().last()

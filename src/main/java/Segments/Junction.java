@@ -109,4 +109,23 @@ public class Junction extends Segment implements Comparable<Junction> {
 
         return result.toString();
     }
+
+    public String toGeoJsonLite() {
+        StringBuilder result = new StringBuilder();
+        result.append("{\"type\":\"Feature\"")
+                .append("\",\"properties\":{")
+                .append("\"score\":").append(getScore())
+                .append(",\n\"incidents\":").append((numberOfNonScaryIncidents + numberOfScaryIncidents))
+                .append(",\n\"rides\":").append(numberOfRides)
+                .append("},\n\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[");
+
+        for (int i = 0; i < poly_vertices_latsArray.length-1; i++) {
+            result.append("[").append(poly_vertices_lonsArray[i]).append(",").append(poly_vertices_latsArray[i]).append("],");
+        }
+        result.append("[").append(poly_vertices_lonsArray[poly_vertices_lonsArray.length-1]).append(",").append(poly_vertices_latsArray[poly_vertices_latsArray.length-1]).append("]]]}}");
+
+
+
+        return result.toString();
+    }
 }
