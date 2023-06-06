@@ -43,23 +43,13 @@ public class Segment {
     }
 
     public String determineColor(double score) {
-        String color = "#1a9641";
-        double opacity = 0.1;
-        int weight = 1;
-        if (score >= 0.5) {
-            color = "#d7191c";
-            opacity = 0.7;
-            weight = 5;
-        } else if (score >= 0.25) {
-            color = "#ff6600";
-            opacity = 0.7;
-            weight = 5;
-        } else if (score > 0.05) {
-            color = "#ffff00";
-            opacity = 0.7;
-            weight = 5;
-        }
-        return color+","+opacity + "," + weight;
+        return score >= 0.5
+                ? "#d7191c"
+                : score < 0.5 && score >= 0.25
+                ? "#ff6600"
+                : score >= 0.1
+                ? "#ffff00"
+                : "#1a9641";
     }
 
     public String toGeoJson() {

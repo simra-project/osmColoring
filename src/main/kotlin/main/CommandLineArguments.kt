@@ -101,6 +101,13 @@ class CommandLineArguments(parser: ArgParser) {
         ) { this.toBoolean() }
         .default(true)
 
+    val createAlsoLiteDashboard by parser
+        .flagging(
+            "--lite",
+            help = "create also a <region>_lite.json dashboard only containing the property \"color\" and the geometry."
+        )
+        .default(false)
+
     // Specify name of JSON output file depending on relevanceThresholdRideCount (= minRides)
     val jsonOutputFile = if (relevanceThresholdRideCount == 1) File("$outputDir/${region}_all.json") else File("$outputDir/$region.json")
     val jsonLiteOutputFile = if (relevanceThresholdRideCount == 1) File("$outputDir/${region}_all_lite.json") else File("$outputDir/${region}_lite.json")

@@ -148,7 +148,9 @@ public class SegmentMapper {
                 streetList.add(street);
             }
             added = addSegmentToGeoJson(segment, geoJSONContent, cla);
-            addSegmentToGeoJsonLite(segment, geoJSONLiteContent, cla);
+            if (cla.getCreateAlsoLiteDashboard()) {
+                addSegmentToGeoJsonLite(segment, geoJSONLiteContent, cla);
+            }
             if (added && segmentIndex < segmentMap.size() - 1) {
                 // add comma and line breaks since there will be more segments
                 geoJSONContent.append(",\n\n");
@@ -168,7 +170,9 @@ public class SegmentMapper {
         logger.info("Number of Segments with at least 1 ride: " + numberOfSegmentsWithRides);
         logger.info("Number of relevant segments: " + numberOfRelevantSegments);
         writeGeoJSON(geoJSONContent.toString(), cla.getJsonOutputFile());
-        writeGeoJSON(geoJSONLiteContent.toString(), cla.getJsonLiteOutputFile());
+        if (cla.getCreateAlsoLiteDashboard()) {
+            writeGeoJSON(geoJSONLiteContent.toString(), cla.getJsonLiteOutputFile());
+        }
     }
 
     private static boolean hasRide(Segment segment) {
