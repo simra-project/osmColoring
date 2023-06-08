@@ -154,9 +154,11 @@ public class SegmentMapper {
             if (added && segmentIndex < segmentMap.size() - 1) {
                 // add comma and line breaks since there will be more segments
                 geoJSONContent.append(",\n\n");
+                geoJSONLiteContent.append(",\n");
             } else if (added) {
                 // only add line breaks since last line
                 geoJSONContent.append("\n\n");
+                geoJSONLiteContent.append("\n");
             }
             segmentIndex++;
         }
@@ -164,6 +166,7 @@ public class SegmentMapper {
         if (!added && geoJSONContent.length() > 3) {
             // logger.info(geoJSONContent.substring(geoJSONContent.length()-10));
             geoJSONContent.deleteCharAt(geoJSONContent.length()-3);
+            geoJSONLiteContent.deleteCharAt(geoJSONLiteContent.length()-2);
         }
 
         logger.info("Number of Segments: " + segmentMap.size());
@@ -200,12 +203,20 @@ public class SegmentMapper {
     private static boolean addSegmentToGeoJsonLite(Segment segment, StringBuilder geoJSONLiteContent,
                                                CommandLineArguments cla) {
         if (!cla.getIgnoreIrrelevantSegments()) {
-            geoJSONLiteContent.append(segment.toGeoJsonLite());
+            if (segment instanceof Junction) {
+                geoJSONLiteContent.append(((Junction)segment).toGeoJsonLite());
+            } else {
+                geoJSONLiteContent.append(((Street)segment).toGeoJsonLite());
+            }
             numberOfRelevantSegments++;
             return true;
         } else {
             if (isRelevant(segment, cla)) {
-                geoJSONLiteContent.append(segment.toGeoJsonLite());
+                if (segment instanceof Junction) {
+                    geoJSONLiteContent.append(((Junction)segment).toGeoJsonLite());
+                } else {
+                    geoJSONLiteContent.append(((Street)segment).toGeoJsonLite());
+                }
                 numberOfRelevantSegments++;
                 return true;
             }

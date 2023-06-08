@@ -85,7 +85,7 @@ public class Junction extends Segment implements Comparable<Junction> {
     public String toGeoJson() {
         StringBuilder result = new StringBuilder();
         result.append("{\"type\":\"Feature\",\"id\":\"").append(id)
-                .append("\",\"properties\":{\"type\":\"Street\",")
+                .append("\",\"properties\":{\"type\":\"Junction\",")
                 .append("\n\"score\":").append(getScore())
                 .append(",\n\"incidents\":").append((numberOfNonScaryIncidents + numberOfScaryIncidents))
                 .append(",\n\"rides\":").append(numberOfRides)
@@ -114,14 +114,13 @@ public class Junction extends Segment implements Comparable<Junction> {
         StringBuilder result = new StringBuilder();
         result.append("{\"type\":\"Feature\"")
                 .append(",\"properties\":{")
-                .append("\"score\":").append(getScore())
-                .append(",\"color\":\"").append(determineColor(getScore())).append("\"")
+                .append("\"color\":\"").append(determineColor(getScore())).append("\"")
                 .append("},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[");
 
         for (int i = 0; i < poly_vertices_latsArray.length-1; i++) {
             result.append("[").append(poly_vertices_lonsArray[i]).append(",").append(poly_vertices_latsArray[i]).append("],");
         }
-        result.append("[").append(poly_vertices_lonsArray[poly_vertices_lonsArray.length-1]).append(",").append(poly_vertices_latsArray[poly_vertices_latsArray.length-1]).append("]]]}},\n");
+        result.append("[").append(poly_vertices_lonsArray[poly_vertices_lonsArray.length-1]).append(",").append(poly_vertices_latsArray[poly_vertices_latsArray.length-1]).append("]]]}}");
 
 
 
