@@ -40,6 +40,7 @@ public class GeoJsonPrinter {
 
     }
 
+
     public static void writeGeoJSONLite(String content, File outputFile) {
         try {
             String json = geoJSONHead() + content + geoJSONTail();

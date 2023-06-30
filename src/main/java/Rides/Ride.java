@@ -11,6 +11,7 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
 
+
 public class Ride {
 
     public List<RideBucket> rideBuckets = new ArrayList<>();
@@ -72,6 +73,7 @@ public class Ride {
                 if (incidentPart) {
                     String[] lineArray = line.split(",", -1);
                     // skip incident if it is "nothing" or corrupted
+
                     if (line.endsWith(",,,,,") || line.length()<6 || lineArray[8].equals("0")||lineArray[8].equals("") || lineArray[8].equals("-5")) {
                         continue;
                     }
