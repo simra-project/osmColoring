@@ -17,6 +17,7 @@ public class Street extends Segment implements Comparable<Street> {
     public String partOfStreetWithId;
     public String[] segment_nodes;
     public int numberOfRidesSouthWest, numberOfRidesNorthEast, numberOfIncidentsSouthWest, numberOfIncidentsNorthEast, numberOfScaryIncidentsSouthWest, numberOfScaryIncidentsNorthEast, numberOfNonScaryIncidentsSouthWest, numberOfNonScaryIncidentsNorthEast;
+    public int clopa, spiot, nlorh, saho, tailgating, nd, dao, other;
     public HashMap<String, Integer> scaryIncidentTypesSouthWest,scaryIncidentTypesNorthEast, nonScaryIncidentTypesSouthWest, nonScaryIncidentTypesNorthEast= new HashMap<>();
     public double[] lanes_backward;
     public double seg_length, scoreSouthWest, scoreNorthEast, score;
@@ -105,14 +106,7 @@ public class Street extends Segment implements Comparable<Street> {
         return result.toString();
     }
 
-
-    @Override
-    public int compareTo(@NotNull Street o) {
-        return this.getScore().compareTo(o.getScore());
-    }
-
-    public String toGeoJson() {
-        StringBuilder result = new StringBuilder();
+    public void appendFeatures(StringBuilder result){
         result.append("{\"type\":\"Feature\",\"id\":\"").append(id)
                 .append("\",\"properties\":{\"type\":\"Street\",")
                 .append("\n\"score\":").append(getScore())
@@ -125,15 +119,94 @@ public class Street extends Segment implements Comparable<Street> {
                 .append(",\n\"rides north east\":").append(numberOfRidesNorthEast)
                 .append(",\n\"incidents north east\":").append((numberOfNonScaryIncidentsNorthEast + numberOfScaryIncidentsNorthEast))
                 .append(",\n\"score north east\":").append(scoreNorthEast)
-                .append(",\n\"clopa\":").append((scaryIncidentTypesSouthWest.get("-2") + nonScaryIncidentTypesSouthWest.get("-2") + scaryIncidentTypesNorthEast.get("-2") + nonScaryIncidentTypesNorthEast.get("-2") + scaryIncidentTypesSouthWest.get("1") + nonScaryIncidentTypesSouthWest.get("1") + scaryIncidentTypesNorthEast.get("1") + nonScaryIncidentTypesNorthEast.get("1")))
-                .append(",\n\"spiot\":").append((scaryIncidentTypesSouthWest.get("2") + nonScaryIncidentTypesSouthWest.get("2") + scaryIncidentTypesNorthEast.get("2") + nonScaryIncidentTypesNorthEast.get("2")))
-                .append(",\n\"nlorh\":").append((scaryIncidentTypesSouthWest.get("3") + nonScaryIncidentTypesSouthWest.get("3") + scaryIncidentTypesNorthEast.get("3") + nonScaryIncidentTypesNorthEast.get("3")))
-                .append(",\n\"saho\":").append((scaryIncidentTypesSouthWest.get("4") + nonScaryIncidentTypesSouthWest.get("4") + scaryIncidentTypesNorthEast.get("4") + nonScaryIncidentTypesNorthEast.get("4")))
-                .append(",\n\"tailgating\":").append((scaryIncidentTypesSouthWest.get("5") + nonScaryIncidentTypesSouthWest.get("5") + scaryIncidentTypesNorthEast.get("5") + nonScaryIncidentTypesNorthEast.get("5")))
-                .append(",\n\"nd\":").append((scaryIncidentTypesSouthWest.get("6") + nonScaryIncidentTypesSouthWest.get("6") + scaryIncidentTypesNorthEast.get("6") + nonScaryIncidentTypesNorthEast.get("6")))
-                .append(",\n\"dao\":").append((scaryIncidentTypesSouthWest.get("7") + nonScaryIncidentTypesSouthWest.get("7") + scaryIncidentTypesNorthEast.get("7") + nonScaryIncidentTypesNorthEast.get("7")))
-                .append(",\n\"other\":").append((scaryIncidentTypesSouthWest.get("8") + nonScaryIncidentTypesSouthWest.get("8") + scaryIncidentTypesNorthEast.get("8") + nonScaryIncidentTypesNorthEast.get("8")))
-                .append(super.toGeoJson())
+                .append(",\n\"clopa\":").append((scaryIncidentTypesSouthWest.get("-2") + nonScaryIncidentTypesSouthWest.get("-2") + scaryIncidentTypesNorthEast.get("-2") + nonScaryIncidentTypesNorthEast.get("-2") + scaryIncidentTypesSouthWest.get("1") + nonScaryIncidentTypesSouthWest.get("1") + scaryIncidentTypesNorthEast.get("1") + nonScaryIncidentTypesNorthEast.get("1")+clopa))
+                .append(",\n\"spiot\":").append((scaryIncidentTypesSouthWest.get("2") + nonScaryIncidentTypesSouthWest.get("2") + scaryIncidentTypesNorthEast.get("2") + nonScaryIncidentTypesNorthEast.get("2")+spiot))
+                .append(",\n\"nlorh\":").append((scaryIncidentTypesSouthWest.get("3") + nonScaryIncidentTypesSouthWest.get("3") + scaryIncidentTypesNorthEast.get("3") + nonScaryIncidentTypesNorthEast.get("3")+nlorh))
+                .append(",\n\"saho\":").append((scaryIncidentTypesSouthWest.get("4") + nonScaryIncidentTypesSouthWest.get("4") + scaryIncidentTypesNorthEast.get("4") + nonScaryIncidentTypesNorthEast.get("4")+saho))
+                .append(",\n\"tailgating\":").append((scaryIncidentTypesSouthWest.get("5") + nonScaryIncidentTypesSouthWest.get("5") + scaryIncidentTypesNorthEast.get("5") + nonScaryIncidentTypesNorthEast.get("5")+tailgating))
+                .append(",\n\"nd\":").append((scaryIncidentTypesSouthWest.get("6") + nonScaryIncidentTypesSouthWest.get("6") + scaryIncidentTypesNorthEast.get("6") + nonScaryIncidentTypesNorthEast.get("6")+nd))
+                .append(",\n\"dao\":").append((scaryIncidentTypesSouthWest.get("7") + nonScaryIncidentTypesSouthWest.get("7") + scaryIncidentTypesNorthEast.get("7") + nonScaryIncidentTypesNorthEast.get("7")+dao))
+                .append(",\n\"other\":").append((scaryIncidentTypesSouthWest.get("8") + nonScaryIncidentTypesSouthWest.get("8") + scaryIncidentTypesNorthEast.get("8") + nonScaryIncidentTypesNorthEast.get("8")+other));
+    }
+    @Override
+    public int compareTo(@NotNull Street o) {
+        return this.getScore().compareTo(o.getScore());
+    }
+    public String detailJson() {
+        StringBuilder result = new StringBuilder();
+        appendFeatures(result);
+        //Highway Name
+        result.append(",\n\"highway names\":");
+        Iterator<String> iterator = highwayName.iterator();
+        while (iterator.hasNext()) {
+            result.append("\"").append(iterator.next()).append("\"");
+            if (iterator.hasNext()){
+                result.append(",");
+            }
+        }
+        //Highway Type
+        result.append(",\n\"highway types\":[");
+        for (int i = 0; i < highWayTypes.length; i++){
+            result.append("\"").append(highWayTypes[i]).append("\"");
+            if (i != highWayTypes.length - 1){
+                result.append(",");
+            }
+        }
+        result.append("]");
+        //Highway Lanes
+        result.append(",\n\"highway lanes\":").append(highWayLanes);
+        //Highway Lanes Backward
+        result.append(",\n\"lanes backward\":[");
+        for (int i = 0; i < lanes_backward.length; i++){
+            result.append(lanes_backward[i]);
+            if (i != lanes_backward.length - 1){
+                result.append(",");
+            }
+        }
+        result.append("]");
+        //Segment nodes
+        result.append(",\n\"segment nodes\":[");
+        for (int i = 0; i < segment_nodes.length; i++){
+            result.append("\"").append(segment_nodes[i]).append("\"");
+            if (i != segment_nodes.length - 1){
+                result.append(",");
+            }
+        }
+        result.append("]");
+        //Segment length
+        result.append(",\n\"segment length\":").append(seg_length);
+        //Poly_lats
+        result.append(",\n\"poly lats\":[");
+        for (int i = 0; i < poly_vertices_latsArray.length; i++){
+            result.append(poly_vertices_latsArray[i]);
+            if (i != poly_vertices_latsArray.length - 1){
+                result.append(",");
+            }
+        }
+        result.append("]");
+        //Poly lons
+        result.append(",\n\"poly lons\":[");
+        for (int i = 0; i < poly_vertices_lonsArray.length; i++){
+            result.append(poly_vertices_lonsArray[i]);
+            if (i != poly_vertices_lonsArray.length - 1){
+                result.append(",");
+            }
+        }
+        result.append("]");
+        result.append(super.toGeoJson());
+        result.append("},\n\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[");
+        for (int i = 0; i < poly_vertices_latsArray.length-1; i++) {
+            result.append("[").append(poly_vertices_lonsArray[i]).append(",").append(poly_vertices_latsArray[i]).append("],");
+        }
+        result.append("[").append(poly_vertices_lonsArray[poly_vertices_lonsArray.length-1]).append(",").append(poly_vertices_latsArray[poly_vertices_latsArray.length-1]).append("]]]}}");
+
+        return result.toString();
+    }
+
+    public String toGeoJson() {
+        StringBuilder result = new StringBuilder();
+        appendFeatures(result);
+         result.append(super.toGeoJson())
                 .append("},\n\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[");
 
         for (int i = 0; i < poly_vertices_latsArray.length-1; i++) {

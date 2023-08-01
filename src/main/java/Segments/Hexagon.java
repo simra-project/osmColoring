@@ -4,29 +4,23 @@ import geobroker.Geofence;
 import geobroker.Location;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-import static Config.Config.*;
-
-public class Junction extends Segment implements Comparable<Junction> {
+public class Hexagon extends Segment implements Comparable<Hexagon>{
     public int numberOfRides, numberOfIncidents, numberOfScaryIncidents, numberOfNonScaryIncidents;
-    public int clopa, spiot, nlorh, ssho, tailgating, near_dooring, dao, other; // previous number of types of incidents
+    public int clopa, spiot, nlorh, ssho, tailgating, near_dooring, dao, other;
     public HashMap<String, Integer> scaryIncidentTypes, nonScaryIncidentTypes = new HashMap<>();
-    public double[] lanes_bw;
     public double dangerousnessScore;
 
 
-    public Junction(String id, double[] lats, double[] lons, HashSet<String> highwayName, String[] highWayTypes, double[] highWayLanes, double[] lanes_bw, double[] polyLats, double[] polyLons) {
+    public Hexagon(String id, double[] lats, double[] lons, double[] polyLats, double[] polyLons) {
         this.id = id;
         this.lats = lats;
         this.lons = lons;
-        this.highwayName = highwayName;
-        this.highWayTypes = highWayTypes;
-        this.highWayLanes = highWayLanes;
-        this.lanes_bw = lanes_bw;
         this.poly_vertices_latsArray = polyLats;
         this.poly_vertices_lonsArray = polyLons;
-        // geofence needs each location once. So omit the last gps point, which is double because of first and last point.
         List<Location> locations = new ArrayList<>();
         for (int i = 0; i < polyLats.length-1; i++) {
             locations.add(new Location(polyLats[i],polyLons[i]));
@@ -65,7 +59,7 @@ public class Junction extends Segment implements Comparable<Junction> {
     public String toString() {
         StringBuilder result = new StringBuilder();
 
-        result.append("JUNCTION:");
+        result.append("HEXAGON:");
         result.append("|score:").append(dangerousnessScore);
         result.append("|id:").append(id);
         result.append("|coordinates:[");
@@ -77,14 +71,9 @@ public class Junction extends Segment implements Comparable<Junction> {
         return result.toString();
     }
 
-    @Override
-    public int compareTo(@NotNull Junction o) {
-        return this.getScore().compareTo(o.getScore());
-    }
-
     public void appendFeatures(StringBuilder result){
         result.append("{\"type\":\"Feature\",\"id\":\"").append(id)
-                .append("\",\"properties\":{\"type\":\"Junction\",")
+                .append("\",\"properties\":{\"type\":\"Hexagon\",")
                 .append("\n\"score\":").append(getScore())
                 .append(",\n\"incidents\":").append((numberOfNonScaryIncidents + numberOfScaryIncidents))
                 .append(",\n\"scary incidents\":").append((numberOfScaryIncidents))
@@ -99,7 +88,6 @@ public class Junction extends Segment implements Comparable<Junction> {
                 .append(",\n\"dao\":").append((nonScaryIncidentTypes.get("7") + scaryIncidentTypes.get("7")+dao))
                 .append(",\n\"other\":").append((nonScaryIncidentTypes.get("8") + scaryIncidentTypes.get("8")+other));
     }
-
     public String detailJson() {
         StringBuilder result = new StringBuilder();
         appendFeatures(result);
@@ -121,43 +109,7 @@ public class Junction extends Segment implements Comparable<Junction> {
             }
         }
         result.append("]");
-        //Highway Lanes
-        result.append(",\n\"highway lanes\":[");
-        for (int i = 0; i < highWayLanes.length; i++){
-            result.append(highWayLanes[i]);
-            if (i != highWayLanes.length - 1){
-                result.append(",");
-            }
-        }
-        result.append("]");
-        //Lanes backward
-        result.append(",\n\"lanes backward\":[");
-        for (int i = 0; i < lanes_bw.length; i++){
-            result.append(lanes_bw[i]);
-            if (i != lanes_bw.length - 1){
-                result.append(",");
-            }
-        }
-        result.append("]");
-        //Highway Name
-        result.append(",\n\"highway names\":[");
-        Iterator<String> iterator = highwayName.iterator();
-        while (iterator.hasNext()) {
-            result.append("\"").append(iterator.next()).append("\"");
-            if (iterator.hasNext()){
-                result.append(",");
-            }
-        }
-        result.append("]");
-        //Highway Types
-        result.append(",\n\"highway types\":[");
-        for (int i = 0; i < highWayTypes.length; i++){
-            result.append("\"").append(highWayTypes[i]).append("\"");
-            if (i != highWayTypes.length - 1){
-                result.append(",");
-            }
-        }
-        result.append("]");
+
         //Poly_lats
         result.append(",\n\"poly lats\":[");
         for (int i = 0; i < poly_vertices_latsArray.length; i++){
@@ -184,7 +136,6 @@ public class Junction extends Segment implements Comparable<Junction> {
         result.append("[").append(poly_vertices_lonsArray[poly_vertices_lonsArray.length-1]).append(",").append(poly_vertices_latsArray[poly_vertices_latsArray.length-1]).append("]]]}}");
         return result.toString();
     }
-
     public String toGeoJson() {
         StringBuilder result = new StringBuilder();
         appendFeatures(result);
@@ -199,20 +150,8 @@ public class Junction extends Segment implements Comparable<Junction> {
         return result.toString();
     }
 
-    public String toGeoJsonLite() {
-        StringBuilder result = new StringBuilder();
-        result.append("{\"type\":\"Feature\"")
-                .append(",\"properties\":{")
-                .append("\"color\":\"").append(determineColor(getScore())).append("\"")
-                .append("},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[");
-
-        for (int i = 0; i < poly_vertices_latsArray.length-1; i++) {
-            result.append("[").append(poly_vertices_lonsArray[i]).append(",").append(poly_vertices_latsArray[i]).append("],");
-        }
-        result.append("[").append(poly_vertices_lonsArray[poly_vertices_lonsArray.length-1]).append(",").append(poly_vertices_latsArray[poly_vertices_latsArray.length-1]).append("]]]}}");
-
-
-
-        return result.toString();
+    @Override
+    public int compareTo(@NotNull Hexagon o) {
+        return this.getScore().compareTo(o.getScore());
     }
 }

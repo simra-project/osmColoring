@@ -1,15 +1,34 @@
 package Graph;
 
+import Segments.Hexagon;
 import Segments.Junction;
 import Segments.Segment;
 import Segments.Street;
+import geobroker.Geofence;
 import geobroker.Raster;
 import main.CommandLineArguments;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.locationtech.spatial4j.exception.InvalidShapeException;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.feature.FeatureIterator;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.grid.DefaultGridFeatureBuilder;
+import org.geotools.grid.GridFeatureBuilder;
+import org.geotools.grid.hexagon.HexagonOrientation;
+import org.geotools.grid.hexagon.Hexagons;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.opengis.feature.Feature;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import java.awt.geom.Point2D;
 import java.io.*;
 import java.util.*;
 
@@ -19,157 +38,131 @@ public class SegmentImporter {
 
     private static Map<String,Segment> segmentMap = new HashMap<>();
     public static HashMap<String,Segment> importSegments(Raster raster, CommandLineArguments cla) {
+        // getting the bounding box coordinates to know the size of hexagon grid
+        File osmMetaFile = cla.getOsmMetaFile();
+        double[] bounding_box = getBoundingBox(osmMetaFile);
+        double minX = bounding_box[0];
+        double minY = bounding_box[1];
+        double maxX = bounding_box[2];
+        double maxY = bounding_box[3];
+
+        // test
+        List<Geometry> hexagons = createHexagonalGrid(bounding_box); // new function to create a hexagon grid
+        for(Geometry g : hexagons){
+            Coordinate[] vertices = g.getCoordinates();
+            List<Double> latsArray = new ArrayList<>();
+            List<Double> lonsArray = new ArrayList<>();
+            for (Coordinate point : vertices){
+                latsArray.add(point.getX());
+                lonsArray.add(point.getY());
+            }
+            double[] polyLats = latsArray.stream().mapToDouble(Double::doubleValue).toArray();
+            logger.debug("LATS: " + Arrays.toString(polyLats));
+            double[] polyLons = lonsArray.stream().mapToDouble(Double::doubleValue).toArray();
+            logger.debug("LONS: " + Arrays.toString(polyLons));
+            String uniqueID = UUID.randomUUID().toString();
+            Hexagon hexagon = new Hexagon(uniqueID, polyLats, polyLons, polyLats, polyLons);
+            logger.debug(hexagon.geofence);
+            segmentMap.put(uniqueID, hexagon);
+            logger.debug("putting in raster...");
+            // everything works until here idk y
+            raster.putSubscriptionIdIntoRasterEntries(hexagon.geofence, new ImmutablePair<>("", uniqueID)); // this seems to be create a problem that idk
+            logger.debug("done");
+            System.exit(-1);
+        }
+        // end of test
+
         // read the junctions and put the into segmentMap
-        logger.info("Importing junctions from: " + cla.getOsmJunctionFile().getAbsolutePath());
-        File file = cla.getOsmJunctionFile();
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            // Skip header id|lat|lon|highwayName|highwaytypes|highwaylanes|poly_vertices_lats|poly_vertices_lons
-            String line = br.readLine();
-            while ((line = br.readLine()) != null) {
-                String[] junctionLineArray = line.split("\\|",-1);
-                String id = junctionLineArray[0].split(" ,")[0] + ".0";
-                String[] latsAsStrings = junctionLineArray[1].split(", ");
-                double[] lats = convertStringArrayToDoubleArray(latsAsStrings);
-                String[] lonsAsStrings = junctionLineArray[2].split(", ");
-                double[] lons = convertStringArrayToDoubleArray(lonsAsStrings);
-                String[] highwayNamesArray = junctionLineArray[4]
-                        .replace("[","")
-                        .replace("]","")
-                        .replaceAll("'","")
-                        .replaceAll("\"","")
-                        .split(", ");
-                HashSet<String> highWayNamesHashSet = new HashSet<>(Arrays.asList(highwayNamesArray));
-                String[] highWayTypesArray = junctionLineArray[5]
-                        .replaceAll("\"","")
-                        .replace("[","")
-                        .replace("]","")
-                        .replaceAll("'","")
-                        .split(", ");
-                String[] highWayLanesStrings = junctionLineArray[6]
-                        .replaceAll("\"","")
-                        .replaceAll(", ",",") // might work
-                        .replace("[","")
-                        .replace("]","")
-                        .replaceAll("'","")
-                        .split(",");
-                        //.split(",/s|,");
-                double[] highWayLanesArray = new double[highWayLanesStrings.length];
-                for (int i = 0; i < highWayLanesStrings.length; i++) {
-                    if(highWayLanesStrings[i].equals("unknown")) {
-                        highWayLanesArray[i] = -1;
-                    } else {
-                        highWayLanesArray[i] = Double.valueOf(highWayLanesStrings[i]);
-                    }
-                }
-                String[] lanes_bwStrings = junctionLineArray[7]
-                        .replaceAll("\"","")
-                        .replace("[","")
-                        .replace("]","")
-                        .replaceAll("'","")
-                        .split(", ");
-                double[] lanes_bwArray = new double[lanes_bwStrings.length];
-                for (int i = 0; i < lanes_bwStrings.length; i++) {
-                    if(lanes_bwStrings[i].equals("unknown")) {
-                        lanes_bwArray[i] = -1.0;
-                    } else {
-                        lanes_bwArray[i] = Double.valueOf(lanes_bwStrings[i]);
-                    }
-                }
-                String[] polyLatsStrings = junctionLineArray[9]
-                        .replace("[","")
-                        .replace("]","")
-                        .replace("array('d', ", "")
-                        .replace(")","")
-                        .split(", ");
-                double[] polyLatsArray = convertStringArrayToDoubleArray(polyLatsStrings);
-                String[] polyLonsStrings = junctionLineArray[10]
-                        .replace("[","")
-                        .replace("]","")
-                        .replace("array('d', ", "")
-                        .replace(")","")
-                        .split(", ");
-                double[] polyLonsArray = convertStringArrayToDoubleArray(polyLonsStrings);
-                Junction junction = new Junction(id,lats,lons,highWayNamesHashSet,highWayTypesArray,highWayLanesArray,lanes_bwArray,polyLatsArray,polyLonsArray);
-                int segment_nr = 0;
-                while (segmentMap.containsKey(id)) {
-                    segment_nr++;
-                    id = id.split("\\.")[0] + "." + segment_nr;
-                }
-                segmentMap.put(id, junction);
-                raster.putSubscriptionIdIntoRasterEntries(junction.geofence, new ImmutablePair<>("", id));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        logger.info("SegmentMap size after adding junctions: " + segmentMap.size());
+        File jsonDetailFile = cla.getJsonDetailOutputFile();
+        JSONParser parser = new JSONParser();
         // read the streets and put the into segmentMap
-        logger.info("Importing street segments from: " + cla.getOsmSegmentsFile().getAbsolutePath());
-        file = cla.getOsmSegmentsFile();
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            // Skip header id|lats|lons|highwayName|highwaytype|highwaylanes|poly_vertices_lats|poly_vertices_lons
-            String line = br.readLine();
-            while ((line = br.readLine()) != null) {
-                try {
-                    String[] streetsLineArray = line.replaceAll(" \\| "," \\ ").split("\\|",-1);
-                    String id =  streetsLineArray[1] + ".0";
-                    String highwayname = streetsLineArray[2].split(",",-1)[0].replaceAll("\"","");
-                    String[] highWayTypesArray = {streetsLineArray[3]};
-                    double highwaylanes = -1;
-                    if (streetsLineArray[4].length()==1) {
-                        highwaylanes = Double.valueOf(streetsLineArray[4]);
-                    } else if (streetsLineArray[4].length()>1 && !streetsLineArray[4].contains("u") && !streetsLineArray[4].contains("p")) {
-                        highwaylanes = Double.valueOf(streetsLineArray[4].split(",")[0]);
-                    }
+        if(jsonDetailFile.exists()){
+            try(FileReader reader = new FileReader(jsonDetailFile)){
+                Object obj = parser.parse(reader);
+                JSONObject jsonObject = (JSONObject) obj;
+                JSONArray features = (JSONArray) jsonObject.get("features");
 
-                    String[] lanes_BackwardStrings = streetsLineArray[5]
-                            .replace("unknown","")
-                            .replace("[","")
-                            .replace("}","")
-                            .split(", ",-1);
-                    double[] lanes_Backward = new double[lanes_BackwardStrings.length];
-                    for (int i = 0; i < lanes_BackwardStrings.length; i++) {
-                        if (lanes_BackwardStrings[i].length()>0) {
-                            lanes_Backward[i] = Double.valueOf(lanes_BackwardStrings[i]);
-                        }
-                    }
-                    if (lanes_Backward.length<1) {
-                        lanes_Backward = new double[1];
-                        lanes_Backward[0] = -1;
-                    }
-                    String[] segment_nodesStrings = streetsLineArray[6]
-                            .replace("[","")
-                            .replace("]","")
-                            .split(", ");
+                for(Object featureObj : features) {
+                    JSONObject feature = (JSONObject) featureObj;
+                    JSONObject properties = (JSONObject) feature.get("properties");
 
-                    double seg_length = Double.valueOf(streetsLineArray[7]);
-                    String[] poly_vertices_latsStrings = streetsLineArray[9]
-                            .replace("[","")
-                            .replace("]","")
-                            .split(", ");
-                    double[] poly_vertices_latsArray = convertStringArrayToDoubleArray(poly_vertices_latsStrings);
-                    String[] poly_vertices_lonsStrings = streetsLineArray[10]
-                            .replace("[","")
-                            .replace("]","")
-                            .split(", ");
-                    double[] poly_vertices_lonsArray = convertStringArrayToDoubleArray(poly_vertices_lonsStrings);
-                    Street streetSegment = new Street(id, highwayname, highWayTypesArray, highwaylanes, lanes_Backward, segment_nodesStrings, seg_length, poly_vertices_latsArray, poly_vertices_lonsArray);
+                    String type = (String) properties.get("type"); // the type of each segment: Junction or Street
+                    String id = (String) feature.get("id"); // the id of each segment
+                    if ("Hexagon".equalsIgnoreCase(type)) {
+                        double[] lats = convertJSONArrayToDoubleArray((JSONArray) properties.get("lats"));
+                        double[] lons = convertJSONArrayToDoubleArray((JSONArray) properties.get("lons"));
+                        double[] polyLats = convertJSONArrayToDoubleArray((JSONArray) properties.get("poly lats"));
+                        double[] polyLons = convertJSONArrayToDoubleArray((JSONArray) properties.get("poly lons"));
 
-                    // linkStreetSegmentToJunction(streetSegment,(HashMap<String, Segment>)segmentMap);
-                    int segment_nr = 0;
-                    while (segmentMap.containsKey(id)) {
-                        segment_nr++;
-                        id = id.split("\\.")[0] + "." + segment_nr;
+                        Hexagon hexagon = new Hexagon(id, lats, lons, polyLats, polyLons);
+                        segmentMap.put(hexagon.id, hexagon);
+                        raster.putSubscriptionIdIntoRasterEntries(hexagon.geofence, new ImmutablePair<>("", hexagon.id));
                     }
-                    segmentMap.put(id, streetSegment);
-                    raster.putSubscriptionIdIntoRasterEntries(streetSegment.geofence, new ImmutablePair<>("", id));
-                } catch (InvalidShapeException e) {
-                    e.getLocalizedMessage();
                 }
+            }catch (Exception e){
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        else {
+            List<List<Point2D.Double>> hexagonGrid = createHexagons(minX, minY, maxX, maxY);
+            for (List<Point2D.Double> shape : hexagonGrid) {
+                List<Double> latsArray = new ArrayList<>();
+                List<Double> lonsArray = new ArrayList<>();
+
+                for (Point2D.Double point : shape) {
+                    latsArray.add(point.getY());
+                    lonsArray.add(point.getX());
+                }
+                double[] polyLats = latsArray.stream().mapToDouble(Double::doubleValue).toArray();
+                logger.debug("LATS: " + Arrays.toString(polyLats));
+                double[] polyLons = lonsArray.stream().mapToDouble(Double::doubleValue).toArray();
+                logger.debug("LONS: " + Arrays.toString(polyLons));
+                String uniqueID = UUID.randomUUID().toString();
+                Hexagon hexagon = new Hexagon(uniqueID, polyLats, polyLons, polyLats, polyLons);
+                logger.debug(hexagon.geofence);
+                segmentMap.put(uniqueID, hexagon);
+                raster.putSubscriptionIdIntoRasterEntries(hexagon.geofence, new ImmutablePair<>("", uniqueID));
+                System.exit(-1);
+            }
+        }
+
+        logger.info("SegmentMap size after adding hexagons: " + segmentMap.size());
+
         return (HashMap<String,Segment>)segmentMap;
+    }
+    private static List<List<Point2D.Double>> createHexagons(double minX, double minY, double maxX, double maxY) {
+        List<List<Point2D.Double>> hexagonGrid = new ArrayList<>();
+
+        double width = maxX - minX;
+        double height = maxY - minY;
+
+        double hexagonSize = 0.03;
+        double hDist = hexagonSize * Math.sqrt(3.0);
+        double vDist = 3.0 * hexagonSize / 2.0;
+
+        int numHorHexagon = (int) Math.floor(width / hDist);
+        int numVerHexagon = (int) Math.floor(height / vDist);
+
+        double startX = minX + (width - numHorHexagon * hDist) / 2.0;
+        double startY = minY + (height - numVerHexagon * vDist) / 2.0;
+
+        for (int row = 0; row < numVerHexagon; row++) {
+            for (int col = 0; col < numHorHexagon; col++) {
+                double offsetX = (row % 2 == 0) ? 0.0 : hDist / 2.0;
+                double hexagonX = startX + col * hDist + offsetX;
+                double hexagonY = startY + row * vDist;
+
+                // Check if the hexagon extends beyond the bounding box
+                if (hexagonX + hexagonSize > maxX || hexagonY + hexagonSize > maxY) {
+                    continue; // Skip this hexagon as it is outside the bounding box
+                }
+
+                List<Point2D.Double> vertices = calculateHexagonVertices(hexagonX, hexagonY, hexagonSize);
+                hexagonGrid.add(vertices);
+            }
+        }
+
+        return hexagonGrid;
     }
 
     private static double[] convertStringArrayToDoubleArray(String[] inputArray) {
@@ -183,7 +176,7 @@ public class SegmentImporter {
         return result;
     }
 
-    private static void linkStreetSegmentToJunction(Street thisStreetSegment, HashMap<String,Segment> segmentMap) {
+    private static void linkStreetSegmentToJunction(Street thisStreetSegment,HashMap<String,Segment> segmentMap) {
 
         for (Map.Entry<String, Segment> segmentEntry : segmentMap.entrySet()) {
             String entryId = (String) ((Map.Entry) segmentEntry).getKey();
@@ -204,4 +197,66 @@ public class SegmentImporter {
             }
         }
     }
+    private static double[] convertJSONArrayToDoubleArray(JSONArray jsonArray){
+        double[] array = new double[jsonArray.size()];
+        for(int i=0; i<jsonArray.size();i++){
+            array[i] = (double) jsonArray.get(i);
+        }
+        return array;
+    }
+
+    private static double[] getBoundingBox(File file){
+        double[] bounding_box = null;
+        if(file.exists()){
+            try (FileReader reader = new FileReader(file)){
+                JSONParser parser = new JSONParser();
+                Object obj = parser.parse(reader);
+                JSONObject jsonObject = (JSONObject) obj;
+                bounding_box = convertJSONArrayToDoubleArray((JSONArray) jsonObject.get("bounding_box"));
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        return bounding_box;
+    }
+
+    private static List<Geometry> createHexagonalGrid(double[] box){
+        List<Geometry> hexagons = new ArrayList<>();
+        CoordinateReferenceSystem sourceCRS = DefaultGeographicCRS.WGS84;
+        ReferencedEnvelope gridBounds = new ReferencedEnvelope(box[1], box[0], box[3], box[2], sourceCRS);
+        double sideLen = 5.0;
+        GridFeatureBuilder builder = new DefaultGridFeatureBuilder();
+        SimpleFeatureSource grid = Hexagons.createGrid(gridBounds, sideLen, HexagonOrientation.ANGLED, builder);
+        try{
+            SimpleFeatureCollection collection = grid.getFeatures();
+            FeatureIterator iterator = collection.features();
+            while (iterator.hasNext()){
+                Feature feature = iterator.next();
+                SimpleFeature sFeature = (SimpleFeature) feature;
+                //logger.debug(sFeature.getAttribute(0));
+                Geometry geometry = (Geometry) sFeature.getAttribute(0);
+                hexagons.add(geometry);
+//                Coordinate[] coordinates = geofence.getCoordinates();
+//                logger.debug(Arrays.toString(coordinates));
+               /* String uniqueID = UUID.randomUUID().toString();
+                raster.putSubscriptionIdIntoRasterEntries(geofence, new ImmutablePair<>("", uniqueID));*/
+            }
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return hexagons;
+    }
+    //also need to calculate centre?
+    public static List<Point2D.Double> calculateHexagonVertices(double centerX, double centerY, double size) {
+        List<Point2D.Double> vertices = new ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            double angle = 2.0 * Math.PI / 6.0 * (i + 0.5);
+            double x = centerX + size * Math.cos(angle);
+            double y = centerY + size * Math.sin(angle);
+            vertices.add(new Point2D.Double(x, y));
+        }
+        return vertices;
+    }
+
 }

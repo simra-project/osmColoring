@@ -51,6 +51,10 @@ public class Segment {
                 ? "#ffff00"
                 : "#1a9641";
     }
+    public String detailJson() {
+        StringBuilder result = new StringBuilder();
+        return result.toString();
+    }
 
     public String toGeoJson() {
         StringBuilder result = new StringBuilder();
