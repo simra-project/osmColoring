@@ -1,5 +1,6 @@
 package Rides;
 
+import Segments.Hexagon;
 import Segments.Junction;
 import Segments.Segment;
 import Segments.Street;
@@ -46,6 +47,8 @@ public class RideBucket {
         double distanceToNearestJunction = Double.MAX_VALUE;
         Street nearestStreet = null;
         double distanceToNearestStreet = Double.MAX_VALUE;
+        Hexagon nearestHexagon = null;
+        double distanceToNearestHexagon = Double.MAX_VALUE;
         Location location = new Location(lat, lon);
         // contains all segments that are near the RideBucket
         List<ImmutablePair<String, String>> segmentCandidates = raster.getSubscriptionIdsInRasterEntryForPublisherLocation(location);
@@ -70,16 +73,24 @@ public class RideBucket {
                     distanceToNearestStreet = distance;
 
                 }
+            } else if (actualSegment instanceof Hexagon && distance <= distanceToNearestHexagon) {
+                if (distance <= MATCH_THRESHOLD) {
+                    nearestHexagon = (Hexagon) actualSegment;
+                    distanceToNearestHexagon = distance;
+                }
             }
         }
 
-        if (nearestJunction == null && nearestStreet == null && segmentCandidates.size() > 0) {
+        if (nearestJunction == null && nearestStreet == null && nearestHexagon == null && segmentCandidates.size() > 0) {
             matchedToSegment = false;
         }
         // return nearest segment
-        if (distanceToNearestJunction <= distanceToNearestStreet) {
+        if (distanceToNearestJunction <= distanceToNearestStreet && distanceToNearestJunction <= distanceToNearestHexagon) {
             return nearestJunction;
-        } else {
+        } else if (distanceToNearestHexagon <= distanceToNearestStreet && distanceToNearestHexagon <= distanceToNearestJunction) {
+            return nearestHexagon;
+        }
+        else {
             return nearestStreet;
         }
     }
@@ -87,10 +98,11 @@ public class RideBucket {
     private double calculateDistanceFromPointToPolygon(Segment actualSegment, double lat, double lon) {
         double[] polyLats = actualSegment.poly_vertices_latsArray;
         double[] polyLons = actualSegment.poly_vertices_lonsArray;
-        Coordinate[] polygonCoordinates = new Coordinate[polyLats.length];
+        Coordinate[] polygonCoordinates = new Coordinate[polyLats.length+1];
         for (int j = 0; j < polyLats.length; j++) {
             polygonCoordinates[j] = new Coordinate(polyLats[j], polyLons[j]);
         }
+        polygonCoordinates[polyLats.length] = polygonCoordinates[0];
         Polygon polygon = new GeometryFactory().createPolygon(polygonCoordinates);
         Point point = new GeometryFactory().createPoint(new Coordinate(lat, lon));
         DistanceOp distanceOp = new DistanceOp(polygon, point);

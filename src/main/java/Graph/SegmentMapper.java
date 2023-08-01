@@ -3,6 +3,7 @@ package Graph;
 import Rides.Incident;
 import Rides.Ride;
 import Rides.RideBucket;
+import Segments.Hexagon;
 import Segments.Junction;
 import Segments.Segment;
 import Segments.Street;
@@ -38,11 +39,16 @@ public class SegmentMapper {
     private static Logger logger = LogManager.getLogger();
 
     static List<Junction> mostDangerousJunctions = new ArrayList<>();
+    static List<Hexagon> mostDangerousHexagons = new ArrayList<>();
     static List<Street> mostDangerousStreetsSouthWest = new ArrayList<>();
     static List<Street> mostDangerousStreetsNorthEast = new ArrayList<>();
     static int numberOfRelevantSegments = 0;
     static HashMap <String, Integer> recentStatsMap = new HashMap<>(); // holds the values of the number of recent rides, incidents, and segments
     static HashMap <String, Integer> prevStatsMap = new HashMap<>(); // holds the values of the number of previous rides, incidents, and segments
+    // These Lists contain the previous junctions and street read from the json file
+    static List <Hexagon> oldHexagonList = new ArrayList<>();
+    static  List<Junction> oldJunctionsList = new ArrayList<>();
+    static List<Street> oldStreetList = new ArrayList<>();
 
     public static void doSegmentMapping(CommandLineArguments cla) {
         // Creating the Geobroker Raster. See the documentation of the Geobroker: https://github.com/MoeweX/geobroker
@@ -56,11 +62,7 @@ public class SegmentMapper {
         // dangerousness score.
         List <Street> recentStreetList = new ArrayList<>();
         List <Junction> recentJunctionList = new ArrayList<>();
-
-        // These Lists contain the previous junctions and street read from the json file
-        List<Junction> oldJunctionsList = new ArrayList<>();
-        List<Street> oldStreetList = new ArrayList<>();
-
+        List <Hexagon> recentHexagonList = new ArrayList<>();
 
         // Contains the ride files of specified region.
         List<File> rideFolder = getRidesOfRegionAndUNKNOWN(cla.getSimraRoot(), cla.getRegion());
@@ -77,7 +79,7 @@ public class SegmentMapper {
         getPrevStats(cla);
         for (int i = 0; i < rideFolder.size(); i++) {
             Path ridePath = rideFolder.get(i).toPath();
-            /*the creation date of each ride file is read and compared to the timestamp*/
+//            the creation date of each ride file is read and compared to the timestamp
             LocalDateTime creationDateTime = null;
             try{
                 BasicFileAttributes fileAttr = Files.readAttributes(ridePath, BasicFileAttributes.class);
@@ -85,7 +87,7 @@ public class SegmentMapper {
             } catch (Exception e){
                 e.printStackTrace();
             }
-            /*if the the creation date is before the timestamp, continue to the next ride file*/
+//            if the creation date is before the timestamp, continue to the next ride file
             if (date != null && creationDateTime.compareTo(date) < 0) {
                 continue;
             }
@@ -126,12 +128,12 @@ public class SegmentMapper {
 
         File file = cla.getJsonDetailOutputFile();
         if (file.exists()) {
-            getElements(oldJunctionsList, oldStreetList, file); // gets the previous details of the junctions and street
+            getElements(file); // gets the previous details of the junctions and street
 
             // looping through each old junctions and street, matching the id to the id(s) of the new segments
             // the number of rides and incidents are added together
             // the scores will be recalculated
-            for (Junction j : oldJunctionsList) {
+            /*for (Junction j : oldJunctionsList) {
                 if (segmentMap.containsKey(j.id)) {
                     Segment segment = segmentMap.get(j.id);
                     Junction junction = (Junction) segment;
@@ -173,6 +175,27 @@ public class SegmentMapper {
                 } else {
                     segmentMap.put(s.id, s);
                 }
+            }*/
+            for (Hexagon h : oldHexagonList) {
+                if (segmentMap.containsKey(h.id)) {
+                    Segment segment = segmentMap.get(h.id);
+                    Hexagon hexagon = (Hexagon) segment;
+                    hexagon.numberOfRides += h.numberOfRides;
+                    hexagon.numberOfNonScaryIncidents += h.numberOfNonScaryIncidents;
+                    hexagon.numberOfScaryIncidents += h.numberOfScaryIncidents;
+                    hexagon.numberOfIncidents += h.numberOfIncidents;
+                    hexagon.clopa += h.clopa;
+                    hexagon.spiot += h.spiot;
+                    hexagon.nlorh += h.nlorh;
+                    hexagon.ssho += h.ssho;
+                    hexagon.tailgating += h.tailgating;
+                    hexagon.near_dooring += h.near_dooring;
+                    hexagon.dao += h.dao;
+                    hexagon.other += h.other;
+
+                } else {
+                    segmentMap.put(h.id, h);
+                }
             }
 
         }
@@ -183,7 +206,7 @@ public class SegmentMapper {
             if (hasRide(segment)) {
                 numberOfSegmentsWithRides++;
             }
-            if (segment instanceof Junction) {
+            /*if (segment instanceof Junction) {
                 Junction junction = (Junction) segment;
                 if (mostDangerousJunctions.size() < 3) {
                     mostDangerousJunctions.add(junction);
@@ -204,7 +227,28 @@ public class SegmentMapper {
                     }
                 }
                 recentJunctionList.add(junction);
-            } else {
+            } else*/ if (segment instanceof Hexagon) {
+                Hexagon hexagon = (Hexagon) segment;
+                if (mostDangerousHexagons.size() < 3) {
+                    mostDangerousHexagons.add(hexagon);
+                    mostDangerousHexagons.add(hexagon);
+                    mostDangerousHexagons.add(hexagon);
+                }
+                hexagon.dangerousnessScore = ((cla.getScarinessFactor() * hexagon.numberOfScaryIncidents + hexagon.numberOfNonScaryIncidents) /
+                        hexagon.numberOfRides);
+                for (int j = 0; j < 3; j++) {
+                    Hexagon thisHexagon = mostDangerousHexagons.get(j);
+                    if (hexagon.dangerousnessScore > thisHexagon.dangerousnessScore) {
+                        Hexagon tempHexagon = mostDangerousHexagons.get(j);
+                        mostDangerousHexagons.set(j, hexagon);
+                        if (j < 2) {
+                            mostDangerousHexagons.set(j + 1, tempHexagon);
+                        }
+                        break;
+                    }
+                }
+                recentHexagonList.add(hexagon);
+            } /*else {
                 Street street = (Street) segment;
                 if (mostDangerousStreetsSouthWest.size() < 3) {
                     mostDangerousStreetsSouthWest.add(street);
@@ -217,12 +261,12 @@ public class SegmentMapper {
                     mostDangerousStreetsNorthEast.add(street);
                 }
                 street.scoreSouthWest = (((cla.getScarinessFactor() * street.numberOfScaryIncidentsSouthWest + street.numberOfNonScaryIncidentsSouthWest) /
-                        street.numberOfRidesSouthWest)/*/street.seg_length)*10000*/);
+                        street.numberOfRidesSouthWest)*//*//*street.seg_length)*10000*//*);
                 street.scoreNorthEast = (((cla.getScarinessFactor() * street.numberOfScaryIncidentsNorthEast + street.numberOfNonScaryIncidentsNorthEast) /
-                        street.numberOfRidesNorthEast)/*/street.seg_length)*10000*/);
+                        street.numberOfRidesNorthEast)*//*//*street.seg_length)*10000*//*);
                 street.score = (((cla.getScarinessFactor() * (street.numberOfScaryIncidentsSouthWest + street.numberOfScaryIncidentsNorthEast) +
                         (street.numberOfNonScaryIncidentsSouthWest + street.numberOfNonScaryIncidentsNorthEast)) /
-                        (street.numberOfRidesSouthWest + street.numberOfRidesNorthEast))/*/street.seg_length)*10000*/);
+                        (street.numberOfRidesSouthWest + street.numberOfRidesNorthEast))*//*//*street.seg_length)*10000*//*);
                 for (int j = 0; j < 3; j++) {
                     Street thisStreetSouthWest = mostDangerousStreetsSouthWest.get(j);
                     if (street.scoreSouthWest > thisStreetSouthWest.scoreSouthWest) {
@@ -246,7 +290,7 @@ public class SegmentMapper {
                     }
                 }
                 recentStreetList.add(street);
-            }
+            }*/
 
             added = addSegmentToGeoJson(segment, geoJSONContent, cla);
             bool = addSegmentToDetailJson(segment, detailJSONContent, cla);
@@ -367,7 +411,7 @@ public class SegmentMapper {
      * Creates new Junction and Street objects for each element
      * Puts each Junction and Street into respective Lists
      * */
-    private static void getElements(List<Junction> oldJunctionsList, List<Street> oldStreetList, File file){
+    private static void getElements(File file){
         JSONParser parser = new JSONParser();
 
         if (file.exists()){
@@ -411,7 +455,7 @@ public class SegmentMapper {
 
                         oldJunctionsList.add(junction); // add Junction object into the List
                     }
-                    if ("Street".equalsIgnoreCase(type)){
+                    else if ("Street".equalsIgnoreCase(type)){
                         // gets the object to pass as arguments needed to create a Street object
                         String highWayName = (String) properties.get("highway names");
                         String[] highWayTypes = strArray((JSONArray) properties.get("highway types"));
@@ -445,6 +489,27 @@ public class SegmentMapper {
                         street.other = ((Long) properties.get("other")).intValue();
 
                         oldStreetList.add(street); // add Street object into List
+                    } else if ("Hexagon".equalsIgnoreCase(type)) {
+                        double[] lats =  doubleArray((JSONArray) properties.get("lats"));
+                        double[] lons = doubleArray((JSONArray) properties.get("lons"));
+                        double[] polyLats = doubleArray((JSONArray) properties.get("poly lats"));
+                        double[] polyLons = doubleArray((JSONArray) properties.get("poly lons"));
+
+                        Hexagon hexagon = new Hexagon(id,lats,lons,polyLats,polyLons);
+                        hexagon.numberOfRides = ((Long) properties.get("rides")).intValue();
+                        hexagon.numberOfIncidents = ((Long) properties.get("incidents")).intValue();
+                        hexagon.numberOfScaryIncidents = ((Long) properties.get("scary incidents")).intValue();
+                        hexagon.numberOfNonScaryIncidents = ((Long) properties.get("non-scary incidents")).intValue();
+                        hexagon.clopa = ((Long) properties.get("clopa")).intValue();
+                        hexagon.spiot = ((Long) properties.get("spiot")).intValue();
+                        hexagon.nlorh = ((Long) properties.get("nlorh")).intValue();
+                        hexagon.ssho = ((Long) properties.get("ssho")).intValue();
+                        hexagon.tailgating = ((Long) properties.get("tailgating")).intValue();
+                        hexagon.near_dooring = ((Long) properties.get("near-dooring")).intValue();
+                        hexagon.dao = ((Long) properties.get("dao")).intValue();
+                        hexagon.other = ((Long) properties.get("other")).intValue();
+
+                        oldHexagonList.add(hexagon); // add Hexagon object into the List
                     }
                 }
 
@@ -541,6 +606,13 @@ public class SegmentMapper {
             boolean rides = junction.numberOfRides >= cla.getRelevanceThresholdRideCount();
             boolean score = (junction.getScore() >= cla.getRelevanceThresholdScore()) &&
                     (junction.numberOfRides >= cla.getRelevanceThresholdScoreRideCount());
+
+            return rides || score;
+        } else if (segment instanceof Hexagon) {
+            Hexagon hexagon = (Hexagon) segment;
+            boolean rides = hexagon.numberOfRides >= cla.getRelevanceThresholdRideCount();
+            boolean score = (hexagon.getScore() >= cla.getRelevanceThresholdScore()) &&
+                    (hexagon.numberOfRides >= cla.getRelevanceThresholdScoreRideCount());
 
             return rides || score;
         } else {

@@ -1,5 +1,6 @@
 package Rides;
 
+import Segments.Hexagon;
 import Segments.Junction;
 import Segments.Segment;
 import Segments.Street;
@@ -170,6 +171,25 @@ public class Ride {
                     } else {
                         ((Junction)rideBucket.segment).nonScaryIncidentTypes.merge(String.valueOf(thisIncident.incident),1,Integer::sum);
                         ((Junction)rideBucket.segment).numberOfNonScaryIncidents++;
+                    }
+                } catch (ArrayIndexOutOfBoundsException | NullPointerException aioobe) {
+                    aioobe.printStackTrace();
+                    System.exit(1);
+                }
+            }
+        } else if (rideBucket.segment instanceof Hexagon) {
+            ((Hexagon)rideBucket.segment).numberOfRides++;
+            ((Hexagon)rideBucket.segment).numberOfIncidents += incidentsOfOneSegment.size();
+            for (int i = 0; i < incidentsOfOneSegment.size(); i++) {
+                Incident thisIncident = incidentsOfOneSegment.get(i);
+                rideBucket.segment.incidents.add(thisIncident);
+                try {
+                    if (thisIncident.scary) {
+                        ((Hexagon)rideBucket.segment).scaryIncidentTypes.merge(String.valueOf(thisIncident.incident),1,Integer::sum);
+                        ((Hexagon)rideBucket.segment).numberOfScaryIncidents++;
+                    } else {
+                        ((Hexagon)rideBucket.segment).nonScaryIncidentTypes.merge(String.valueOf(thisIncident.incident),1,Integer::sum);
+                        ((Hexagon)rideBucket.segment).numberOfNonScaryIncidents++;
                     }
                 } catch (ArrayIndexOutOfBoundsException | NullPointerException aioobe) {
                     aioobe.printStackTrace();
