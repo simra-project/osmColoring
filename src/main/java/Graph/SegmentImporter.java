@@ -18,6 +18,7 @@ import org.geotools.grid.DefaultGridFeatureBuilder;
 import org.geotools.grid.GridFeatureBuilder;
 import org.geotools.grid.hexagon.HexagonOrientation;
 import org.geotools.grid.hexagon.Hexagons;
+import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -41,35 +42,9 @@ public class SegmentImporter {
         // getting the bounding box coordinates to know the size of hexagon grid
         File osmMetaFile = cla.getOsmMetaFile();
         double[] bounding_box = getBoundingBox(osmMetaFile);
-        double minX = bounding_box[0];
-        double minY = bounding_box[1];
-        double maxX = bounding_box[2];
-        double maxY = bounding_box[3];
 
         // test
-        List<Geometry> hexagons = createHexagonalGrid(bounding_box); // new function to create a hexagon grid
-        for(Geometry g : hexagons){
-            Coordinate[] vertices = g.getCoordinates();
-            List<Double> latsArray = new ArrayList<>();
-            List<Double> lonsArray = new ArrayList<>();
-            for (Coordinate point : vertices){
-                latsArray.add(point.getX());
-                lonsArray.add(point.getY());
-            }
-            double[] polyLats = latsArray.stream().mapToDouble(Double::doubleValue).toArray();
-            logger.debug("LATS: " + Arrays.toString(polyLats));
-            double[] polyLons = lonsArray.stream().mapToDouble(Double::doubleValue).toArray();
-            logger.debug("LONS: " + Arrays.toString(polyLons));
-            String uniqueID = UUID.randomUUID().toString();
-            Hexagon hexagon = new Hexagon(uniqueID, polyLats, polyLons, polyLats, polyLons);
-            logger.debug(hexagon.geofence);
-            segmentMap.put(uniqueID, hexagon);
-            logger.debug("putting in raster...");
-            // everything works until here idk y
-            raster.putSubscriptionIdIntoRasterEntries(hexagon.geofence, new ImmutablePair<>("", uniqueID)); // this seems to be create a problem that idk
-            logger.debug("done");
-            System.exit(-1);
-        }
+
         // end of test
 
         // read the junctions and put the into segmentMap
@@ -104,7 +79,7 @@ public class SegmentImporter {
             }
         }
         else {
-            List<List<Point2D.Double>> hexagonGrid = createHexagons(minX, minY, maxX, maxY);
+            /*List<List<Point2D.Double>> hexagonGrid = createHexagons(bounding_box);
             for (List<Point2D.Double> shape : hexagonGrid) {
                 List<Double> latsArray = new ArrayList<>();
                 List<Double> lonsArray = new ArrayList<>();
@@ -114,15 +89,29 @@ public class SegmentImporter {
                     lonsArray.add(point.getX());
                 }
                 double[] polyLats = latsArray.stream().mapToDouble(Double::doubleValue).toArray();
-                logger.debug("LATS: " + Arrays.toString(polyLats));
                 double[] polyLons = lonsArray.stream().mapToDouble(Double::doubleValue).toArray();
-                logger.debug("LONS: " + Arrays.toString(polyLons));
                 String uniqueID = UUID.randomUUID().toString();
                 Hexagon hexagon = new Hexagon(uniqueID, polyLats, polyLons, polyLats, polyLons);
-                logger.debug(hexagon.geofence);
                 segmentMap.put(uniqueID, hexagon);
                 raster.putSubscriptionIdIntoRasterEntries(hexagon.geofence, new ImmutablePair<>("", uniqueID));
-                System.exit(-1);
+            }*/
+            List<Geometry> hexagons = createHexagonalGrid(bounding_box); // new function to create a hexagon grid
+            for(Geometry g : hexagons){
+                Coordinate[] vertices = g.getCoordinates();
+                List<Double> latsArray = new ArrayList<>();
+                List<Double> lonsArray = new ArrayList<>();
+                for (Coordinate point : vertices){
+                    latsArray.add(point.getX());
+                    lonsArray.add(point.getY());
+                }
+                double[] polyLats = latsArray.stream().mapToDouble(Double::doubleValue).toArray();
+                double[] polyLons = lonsArray.stream().mapToDouble(Double::doubleValue).toArray();
+                String uniqueID = UUID.randomUUID().toString();
+                Hexagon hexagon = new Hexagon(uniqueID, polyLats, polyLons, polyLats, polyLons);
+    //            logger.debug(hexagon.geofence);
+                segmentMap.put(uniqueID, hexagon);
+                raster.putSubscriptionIdIntoRasterEntries(hexagon.geofence, new ImmutablePair<>("", uniqueID));
+
             }
         }
 
@@ -130,13 +119,17 @@ public class SegmentImporter {
 
         return (HashMap<String,Segment>)segmentMap;
     }
-    private static List<List<Point2D.Double>> createHexagons(double minX, double minY, double maxX, double maxY) {
+    private static List<List<Point2D.Double>> createHexagons(double[] box) {
+        double minX = box[0];
+        double minY = box[1];
+        double maxX = box[2];
+        double maxY = box[3];
         List<List<Point2D.Double>> hexagonGrid = new ArrayList<>();
 
         double width = maxX - minX;
         double height = maxY - minY;
 
-        double hexagonSize = 0.03;
+        double hexagonSize = 0.01;
         double hDist = hexagonSize * Math.sqrt(3.0);
         double vDist = 3.0 * hexagonSize / 2.0;
 
@@ -223,23 +216,20 @@ public class SegmentImporter {
     private static List<Geometry> createHexagonalGrid(double[] box){
         List<Geometry> hexagons = new ArrayList<>();
         CoordinateReferenceSystem sourceCRS = DefaultGeographicCRS.WGS84;
-        ReferencedEnvelope gridBounds = new ReferencedEnvelope(box[1], box[0], box[3], box[2], sourceCRS);
-        double sideLen = 5.0;
-        GridFeatureBuilder builder = new DefaultGridFeatureBuilder();
-        SimpleFeatureSource grid = Hexagons.createGrid(gridBounds, sideLen, HexagonOrientation.ANGLED, builder);
+        ReferencedEnvelope gridBounds = new ReferencedEnvelope(box[0], box[2], box[1], box[3], sourceCRS);
         try{
+            ReferencedEnvelope nGridBounds = gridBounds.transform(CRS.decode("EPSG:3857"),true);
+            double sideLen = 1.0;
+            GridFeatureBuilder builder = new DefaultGridFeatureBuilder();
+            SimpleFeatureSource grid = Hexagons.createGrid(nGridBounds, sideLen, HexagonOrientation.FLAT, builder);
+
             SimpleFeatureCollection collection = grid.getFeatures();
             FeatureIterator iterator = collection.features();
             while (iterator.hasNext()){
                 Feature feature = iterator.next();
                 SimpleFeature sFeature = (SimpleFeature) feature;
-                //logger.debug(sFeature.getAttribute(0));
                 Geometry geometry = (Geometry) sFeature.getAttribute(0);
                 hexagons.add(geometry);
-//                Coordinate[] coordinates = geofence.getCoordinates();
-//                logger.debug(Arrays.toString(coordinates));
-               /* String uniqueID = UUID.randomUUID().toString();
-                raster.putSubscriptionIdIntoRasterEntries(geofence, new ImmutablePair<>("", uniqueID));*/
             }
 
         } catch(Exception e){

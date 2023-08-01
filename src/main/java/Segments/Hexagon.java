@@ -22,7 +22,7 @@ public class Hexagon extends Segment implements Comparable<Hexagon>{
         this.poly_vertices_latsArray = polyLats;
         this.poly_vertices_lonsArray = polyLons;
         List<Location> locations = new ArrayList<>();
-        for (int i = 0; i < polyLats.length-1; i++) {
+        for (int i = 0; i < polyLats.length-2; i++) {
             locations.add(new Location(polyLats[i],polyLons[i]));
         }
         this.geofence = Geofence.Companion.polygon(locations);

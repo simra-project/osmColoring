@@ -29,6 +29,7 @@ import static main.UtilKt.getRidesOfRegionAndUNKNOWN;
 import main.CommandLineArguments;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.geotools.referencing.ReferencingFactoryFinder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -52,8 +53,9 @@ public class SegmentMapper {
 
     public static void doSegmentMapping(CommandLineArguments cla) {
         // Creating the Geobroker Raster. See the documentation of the Geobroker: https://github.com/MoeweX/geobroker
-        Raster raster = new Raster(1000);
+        Raster raster = new Raster(100);
 
+        logger.debug(ReferencingFactoryFinder.getCRSAuthorityFactories(null));
         // Contains the Junctions and Street Segments, including their statistics and dangerousness score
         // as value and their Id(s) as their key.
         HashMap<String, Segment> segmentMap = SegmentImporter.importSegments(raster, cla);

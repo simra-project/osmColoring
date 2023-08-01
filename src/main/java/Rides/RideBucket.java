@@ -50,9 +50,11 @@ public class RideBucket {
         Hexagon nearestHexagon = null;
         double distanceToNearestHexagon = Double.MAX_VALUE;
         Location location = new Location(lat, lon);
+        System.out.println(location);
+        System.out.println(raster.getNumberOfExistingRasterEntries());
         // contains all segments that are near the RideBucket
         List<ImmutablePair<String, String>> segmentCandidates = raster.getSubscriptionIdsInRasterEntryForPublisherLocation(location);
-
+        System.out.println(segmentCandidates);
         // loop through all segment candidates and find the segment in which the RideBucket lies
         // Junction beats Street if RideBucket lies in both
         for (int i = 0; i < segmentCandidates.size(); i++) {
@@ -98,7 +100,7 @@ public class RideBucket {
     private double calculateDistanceFromPointToPolygon(Segment actualSegment, double lat, double lon) {
         double[] polyLats = actualSegment.poly_vertices_latsArray;
         double[] polyLons = actualSegment.poly_vertices_lonsArray;
-        Coordinate[] polygonCoordinates = new Coordinate[polyLats.length+1];
+        Coordinate[] polygonCoordinates = new Coordinate[polyLats.length+1]; //+1
         for (int j = 0; j < polyLats.length; j++) {
             polygonCoordinates[j] = new Coordinate(polyLats[j], polyLons[j]);
         }
